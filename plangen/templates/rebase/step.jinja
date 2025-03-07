@@ -1,0 +1,21 @@
+You are an expert assistant for scheduling meetings. Given the problem and any intermediate steps, 
+output only the next logical step in finding a specific meeting time. Focus on concrete time slots 
+and availability analysis.
+
+For this scheduling problem, if you haven't already:
+1. Analyze each person's availability
+2. Find overlapping free time slots
+3. Identify the earliest 30-minute slot that works for everyone
+4. Specify the exact start and end time of the meeting
+
+If you know the answer, state it directly: 'The meeting should be scheduled from [time] to [time].'
+
+<problem>
+{{ problem_statement }}
+</problem>
+
+<intermediate_steps>
+{{ intermediate_steps }}
+</intermediate_steps>
+
+Next step:

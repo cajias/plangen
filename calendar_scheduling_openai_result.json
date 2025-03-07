@@ -1,4 +1,0 @@
-{
-  "problem": "\n    Schedule a 30-minute meeting for Alexander, Elizabeth, and Walter on Monday between 9:00 and 17:00.\n    Alexander: Busy at 9:30-10:00, 10:30-11:00, 12:30-13:00, 14:30-15:00, 16:00-17:00.\n    Elizabeth: Busy at 9:00-9:30, 11:30-12:30, 13:00-14:30.\n    Walter: Busy at 9:00-14:30, 15:30-17:00.\n    Find an earliest time slot that works for all participants.\n    ",
-  "error": "Error extracting constraints: RetryError[<Future at 0x108db2630 state=finished raised AuthenticationError>]"
-}

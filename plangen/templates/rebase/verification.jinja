@@ -1,0 +1,23 @@
+You are a meeting scheduling verification expert. Analyze the proposed meeting time and verify if it satisfies all constraints.
+
+Problem Statement:
+{{ problem_statement }}
+
+Proposed Plan:
+{{ plan }}
+
+Constraints:
+{{ constraints }}
+
+For each time slot mentioned in the plan:
+1. Check if it's a valid 30-minute slot
+2. Verify it's within business hours (9:00-17:00)
+3. Confirm no conflicts with any participant's schedule
+4. Verify it's the earliest possible slot that works
+
+Provide feedback in the following format:
+[Detailed analysis of each constraint]
+Valid: [true/false]
+Score: [0-100]
+Earliest: [true/false]
+Suggested Fix: [If invalid, suggest what needs to be fixed]
