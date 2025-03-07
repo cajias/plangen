@@ -10,6 +10,7 @@ from plangen.algorithms.rebase import REBASE
 from plangen.utils.llm_interface import LLMInterface
 from plangen.agents.constraint_agent import ConstraintAgent
 from plangen.agents.verification_agent import VerificationAgent
+from plangen.examples.calendar import CalendarVerifier
 
 # Load environment variables from .env file
 load_dotenv()
@@ -37,8 +38,11 @@ def main():
     # Initialize the constraint agent
     constraint_agent = ConstraintAgent(llm_interface=llm_interface)
     
-    # Initialize the verification agent
-    verification_agent = VerificationAgent(llm_interface=llm_interface)
+    # Initialize the verification agent with calendar verifier
+    verification_agent = VerificationAgent(
+        llm_interface=llm_interface,
+        verifier=CalendarVerifier()
+    )
     
     # Initialize the REBASE algorithm
     rebase = REBASE(

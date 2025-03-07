@@ -2,7 +2,7 @@
 Test script for the time slot verification mechanism.
 """
 
-from plangen.utils.time_slot_verifier import TimeSlotVerifier, TimeSlot
+from plangen.examples.calendar import TimeSlotVerifier, TimeSlot
 
 def main():
     """Test the time slot verification mechanism."""
