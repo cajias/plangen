@@ -1,15 +1,38 @@
 """
-Tree of Thought algorithm for PlanGEN
+Tree of Thought algorithm for PlanGEN.
 
-This implementation follows the specifications in the PlanGEN paper.
+This module implements the Tree of Thought algorithm, which explores multiple reasoning
+paths in a tree structure, allowing for backtracking and exploration of alternatives.
+The algorithm supports domain-specific verification and templates.
+
+Example:
+    ```python
+    from plangen.algorithms import TreeOfThought
+    from plangen.examples.calendar import CalendarVerifier
+    
+    # Initialize with domain-specific verifier
+    algorithm = TreeOfThought(
+        branching_factor=3,
+        max_depth=5,
+        beam_width=2,
+        domain="calendar",
+        verifier=CalendarVerifier()
+    )
+    
+    # Run the algorithm
+    best_plan, score, metadata = algorithm.run(problem_statement)
+    ```
 """
 
 from typing import Dict, List, Optional, Tuple, Any
 import heapq
 import copy
+import numpy as np
 
 from .base_algorithm import BaseAlgorithm
 from ..utils.llm_interface import LLMInterface
+from ..utils.template_loader import TemplateLoader
+from ..verification import BaseVerifier
 
 class TreeOfThought(BaseAlgorithm):
     """Implementation of the Tree of Thought algorithm as specified in the PlanGEN paper.
@@ -23,6 +46,7 @@ class TreeOfThought(BaseAlgorithm):
         branching_factor: int = 3,
         max_depth: int = 5,
         beam_width: int = 2,
+        domain: Optional[str] = None,
         **kwargs,
     ):
         """Initialize the Tree of Thought algorithm.
@@ -31,46 +55,17 @@ class TreeOfThought(BaseAlgorithm):
             branching_factor: Number of branches to explore at each node
             max_depth: Maximum depth of the tree
             beam_width: Number of paths to keep at each level
+            domain: Optional domain name for domain-specific templates and verification
             **kwargs: Additional arguments passed to BaseAlgorithm
         """
         super().__init__(**kwargs)
         self.branching_factor = branching_factor
         self.max_depth = max_depth
         self.beam_width = beam_width
+        self.domain = domain
         
-        # Define the step prompt template as specified in the paper
-        self.step_prompt_template = (
-            "You are an expert assistant for generating step-by-step plan to solve a given question using "
-            "specified tools. Given the problem and any intermediate steps, output only the next step in "
-            "the plan. Ensure that the next action helps in moving toward the correct plan to solve the "
-            "given question. Do not provide the full plan. Keep responses concise, focusing solely on the "
-            "immediate next step that is most effective in progressing toward the correct plan.\n\n"
-            "<problem>\n{problem_statement}\n</problem>\n"
-            "<intermediate_step>\n{intermediate_steps}\n</intermediate_step>"
-        )
-        
-        # Define the step reward prompt template as specified in the paper
-        self.step_reward_prompt_template = (
-            "Provide a reward score between -100 and 100 for the quality of the provided plan steps, using "
-            "strict evaluation standards. Ensure the reward reflects how effectively the plan contributes to "
-            "progressing toward the correct solution.\n\n"
-            "Problem Statement:\n{problem_statement}\n\n"
-            "Plan:\n{plan}\n\n"
-            "Consider the following constraints while evaluating:\n{constraints}\n\n"
-            "Provide feedback in the following format:\n"
-            "[Step-by-step reasoning for the reward score]\n"
-            "Score: [Strictly provide an integer reward score between -100 and 100]"
-        )
-        
-        # Define the completion prompt template as specified in the paper
-        self.completion_prompt_template = (
-            "You are an assistant tasked with verifying if the final, complete plan to solve the given question "
-            "has been achieved within the intermediate steps. Output only '1' if the intermediate steps "
-            "contain the full solution needed to solve the question. If the full plan has not yet been reached, "
-            "output only '0'. Provide no additional commentary—return exclusively '1' or '0'.\n\n"
-            "<problem>\n{problem_statement}\n</problem>\n"
-            "<intermediate_step>\n{intermediate_steps}\n</intermediate_step>"
-        )
+        # Initialize template loader
+        self.template_loader = TemplateLoader()
     
     def run(self, problem_statement: str) -> Tuple[str, float, Dict[str, Any]]:
         """Run the Tree of Thought algorithm on the given problem statement.
@@ -236,15 +231,25 @@ class TreeOfThought(BaseAlgorithm):
         # Format intermediate steps as a string
         intermediate_steps_text = "\n".join(intermediate_steps)
         
+        # Get the appropriate template
+        template_path = self.template_loader.get_algorithm_template(
+            algorithm="tree_of_thought",
+            template_type="step",
+            domain=self.domain
+        )
+        
         # Generate num_steps different next steps
         for i in range(num_steps):
             # Use slightly different temperature for diversity
             temperature = self.temperature + (i * 0.1)
             
-            # Format the step prompt
-            prompt = self.step_prompt_template.format(
-                problem_statement=problem_statement,
-                intermediate_steps=intermediate_steps_text
+            # Render the template
+            prompt = self.template_loader.render_template(
+                template_path=template_path,
+                variables={
+                    "problem_statement": problem_statement,
+                    "intermediate_steps": intermediate_steps_text
+                }
             )
             
             # Generate the next step
@@ -275,11 +280,21 @@ class TreeOfThought(BaseAlgorithm):
         Returns:
             Tuple of (feedback, score)
         """
-        # Format the step reward prompt
-        prompt = self.step_reward_prompt_template.format(
-            problem_statement=problem_statement,
-            plan=plan,
-            constraints=formatted_constraints
+        # Get the appropriate template
+        template_path = self.template_loader.get_algorithm_template(
+            algorithm="tree_of_thought",
+            template_type="reward",
+            domain=self.domain
+        )
+        
+        # Render the template
+        prompt = self.template_loader.render_template(
+            template_path=template_path,
+            variables={
+                "problem_statement": problem_statement,
+                "plan": plan,
+                "constraints": formatted_constraints
+            }
         )
         
         # Generate the evaluation
@@ -317,10 +332,20 @@ class TreeOfThought(BaseAlgorithm):
         # Format intermediate steps as a string
         intermediate_steps_text = "\n".join(steps)
         
-        # Format the completion prompt
-        prompt = self.completion_prompt_template.format(
-            problem_statement=problem_statement,
-            intermediate_steps=intermediate_steps_text
+        # Get the appropriate template
+        template_path = self.template_loader.get_algorithm_template(
+            algorithm="tree_of_thought",
+            template_type="completion",
+            domain=self.domain
+        )
+        
+        # Render the template
+        prompt = self.template_loader.render_template(
+            template_path=template_path,
+            variables={
+                "problem_statement": problem_statement,
+                "intermediate_steps": intermediate_steps_text
+            }
         )
         
         # Generate the completion check
