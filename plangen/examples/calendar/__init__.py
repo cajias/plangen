@@ -1,15 +1,8 @@
 """
-Calendar scheduling example for PlanGEN.
-
-This example demonstrates how to implement domain-specific verification
-for calendar scheduling problems using the PlanGEN framework.
+Calendar scheduling examples and utilities.
 """
 
+from ..utils.time_slot_verifier import TimeSlot, TimeSlotVerifier
 from .calendar_verifier import CalendarVerifier
-from .time_slot_verifier import TimeSlot, TimeSlotVerifier
 
-__all__ = [
-    'CalendarVerifier',
-    'TimeSlot',
-    'TimeSlotVerifier',
-]
+__all__ = ['TimeSlot', 'TimeSlotVerifier', 'CalendarVerifier']
