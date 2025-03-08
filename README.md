@@ -10,6 +10,7 @@ PlanGEN is a framework for solving complex problems using a multi-agent approach
 - Solution verification
 - Solution selection
 - Support for multiple LLM backends (OpenAI, AWS Bedrock)
+- Multiple interchangeable planning algorithms
 
 ## Installation
 
@@ -110,6 +111,51 @@ print("Constraints:", result["constraints"])
 print("Selected Solution:", result["selected_solution"]["selected_solution"])
 ```
 
+### Using Different Planning Algorithms
+
+PlanGEN supports multiple planning algorithms that can be used interchangeably:
+
+```python
+from plangen.algorithms import BestOfN, TreeOfThought, REBASE, MixtureOfAlgorithms
+from plangen.models import OpenAIModelInterface
+
+# Initialize the model interface
+model = OpenAIModelInterface(model_name="gpt-4")
+
+# Best of N algorithm
+best_of_n = BestOfN(
+    n_plans=5,
+    sampling_strategy="diverse",
+    parallel=True,
+    llm_interface=model
+)
+
+# Tree of Thought algorithm
+tree_of_thought = TreeOfThought(
+    branching_factor=3,
+    max_depth=5,
+    beam_width=2,
+    llm_interface=model
+)
+
+# REBASE algorithm
+rebase = REBASE(
+    max_iterations=5,
+    improvement_threshold=0.1,
+    llm_interface=model
+)
+
+# Mixture of Algorithms
+mixture = MixtureOfAlgorithms(
+    max_algorithm_switches=2,
+    llm_interface=model
+)
+
+# Use any of the algorithms to solve a problem
+problem_statement = "Your problem statement here"
+best_plan, score, metadata = best_of_n.run(problem_statement)
+```
+
 ### Customizing Prompts
 
 ```python
@@ -156,12 +202,33 @@ problem = "Your problem statement here"
 result = plangen.solve(problem)
 ```
 
+## Algorithm Components
+
+PlanGEN provides several interchangeable algorithm components:
+
+1. **BaseAlgorithm**: Abstract base class that all algorithms inherit from
+2. **BestOfN**: Generates multiple plans and selects the best one based on verification scores
+3. **TreeOfThought**: Explores multiple reasoning paths in a tree structure, allowing for backtracking
+4. **REBASE**: Uses recursive refinement to improve plans through iterative feedback
+5. **MixtureOfAlgorithms**: Dynamically selects the best algorithm for the problem
+
+All algorithms implement a common interface and can be used interchangeably:
+
+```python
+# Common interface for all algorithms
+best_plan, score, metadata = algorithm.run(problem_statement)
+```
+
 ## Examples
 
 See the `examples` directory for more detailed examples:
 
 - `calendar_scheduling.py`: Calendar scheduling problem using OpenAI
 - `calendar_scheduling_bedrock.py`: Calendar scheduling problem using AWS Bedrock
+- `test_best_of_n.py`: Using the Best of N algorithm
+- `test_tree_of_thought.py`: Using the Tree of Thought algorithm
+- `test_rebase.py`: Using the REBASE algorithm
+- `test_verification.py`: Using verification strategies
 
 ## License
 

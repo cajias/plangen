@@ -39,6 +39,12 @@ class TreeOfThought(BaseAlgorithm):
     
     This algorithm explores multiple reasoning paths in a tree structure, allowing for
     backtracking and exploration of alternatives.
+    
+    Attributes:
+        branching_factor: Number of branches to explore at each node
+        max_depth: Maximum depth of the tree
+        beam_width: Number of paths to keep at each level
+        domain: Optional domain name for domain-specific templates
     """
     
     def __init__(

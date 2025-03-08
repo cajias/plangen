@@ -1,0 +1,20 @@
+Create a detailed plan to solve the following problem. Your plan should be step-by-step, clear, and address all aspects of the problem.
+
+Problem statement:
+{{ problem_statement }}
+
+Constraints to consider:
+{% for constraint in constraints %}
+- {{ constraint }}
+{% endfor %}
+
+{% if existing_plans %}
+Previous plans have been generated. Your plan should be DIFFERENT from these plans while still correctly solving the problem:
+
+{% for plan in existing_plans %}
+PLAN {{ loop.index }}:
+{{ plan }}
+{% endfor %}
+{% endif %}
+
+Your plan should be unique and approach the problem from a different angle than the previous plans. Focus on creating a novel but effective solution.

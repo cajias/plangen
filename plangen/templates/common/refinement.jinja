@@ -1,0 +1,19 @@
+You are a planning assistant tasked with refining a plan for the following problem:
+
+{{ problem_statement }}
+
+The plan must adhere to these constraints:
+{% for constraint in constraints %}
+- {{ constraint }}
+{% endfor %}
+
+Here is the current plan:
+{{ current_plan }}
+
+Here is feedback on the current plan:
+{{ feedback }}
+
+Please create an improved version of the plan that addresses the feedback while still solving the original problem and following all constraints.
+Your refined plan should be clear, actionable, and thorough.
+
+Refined Plan:

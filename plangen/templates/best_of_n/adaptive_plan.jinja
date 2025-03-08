@@ -1,0 +1,23 @@
+Create a detailed plan to solve the following problem. Your plan should be step-by-step, clear, and address all aspects of the problem.
+
+Problem statement:
+{{ problem_statement }}
+
+Constraints to consider:
+{% for constraint in constraints %}
+- {{ constraint }}
+{% endfor %}
+
+{% if existing_plans and feedbacks %}
+Previous plans have been generated with the following feedback:
+
+{% for plan, feedback, score in plans_with_feedback %}
+PLAN {{ loop.index }} (Score: {{ score }}):
+{{ plan }}
+
+FEEDBACK:
+{{ feedback }}
+{% endfor %}
+{% endif %}
+
+Your plan should learn from the strengths and weaknesses of previous plans. Focus on addressing the issues mentioned in the feedback while maintaining the successful aspects.

@@ -1,0 +1,23 @@
+You are a planning assistant tasked with creating a diverse plan for the following problem:
+
+{{ problem_statement }}
+
+The plan must adhere to these constraints:
+{% for constraint in constraints %}
+- {{ constraint }}
+{% endfor %}
+
+{% if existing_plans %}
+Previous plans have been generated. Your plan should be DIFFERENT from these plans while still correctly solving the problem:
+
+{% for plan in existing_plans %}
+PLAN {{ loop.index }}:
+{{ plan }}
+{% endfor %}
+{% endif %}
+
+Please generate a comprehensive, step-by-step plan that addresses the problem while following all constraints.
+Your plan should be unique and approach the problem from a different angle than the previous plans.
+Focus on creating a novel but effective solution.
+
+Plan:

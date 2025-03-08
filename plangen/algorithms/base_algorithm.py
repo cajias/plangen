@@ -64,6 +64,10 @@ class BaseAlgorithm(ABC):
             
         Returns:
             Tuple of (best_plan, best_score, metadata)
+            
+        Raises:
+            ValueError: If the problem statement is empty
+            RuntimeError: If there's an error during algorithm execution
         """
         pass
     

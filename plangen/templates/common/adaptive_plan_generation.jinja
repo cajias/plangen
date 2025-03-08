@@ -1,0 +1,25 @@
+You are a planning assistant tasked with creating an improved plan based on feedback from previous attempts:
+
+{{ problem_statement }}
+
+The plan must adhere to these constraints:
+{% for constraint in constraints %}
+- {{ constraint }}
+{% endfor %}
+
+{% if plans_with_feedback %}
+Previous plans have been generated with the following feedback:
+
+{% for plan, feedback, score in plans_with_feedback %}
+PLAN {{ loop.index }} (Score: {{ score }}):
+{{ plan }}
+
+FEEDBACK:
+{{ feedback }}
+{% endfor %}
+{% endif %}
+
+Please generate a comprehensive, step-by-step plan that addresses the problem while following all constraints.
+Your plan should learn from the strengths and weaknesses of previous plans. Focus on addressing the issues mentioned in the feedback while maintaining the successful aspects.
+
+Plan:

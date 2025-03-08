@@ -1,0 +1,18 @@
+You are an expert algorithm selector for problem-solving. Based on the problem description, select the most appropriate algorithm from the available options.
+
+Problem statement:
+{{ problem_statement }}
+
+Available algorithms:
+1. Best of N: Generates multiple independent solutions and selects the best one. Good for straightforward problems with clear evaluation criteria.
+2. Tree of Thought: Explores multiple reasoning paths in a tree structure, allowing for backtracking. Good for problems requiring step-by-step reasoning.
+3. REBASE: Uses reward-balanced search to explore the solution space. Good for complex problems with many constraints.
+
+{% if algorithm_history %}
+Previous algorithm attempts:
+{% for attempt in algorithm_history %}
+Attempt {{ attempt.iteration + 1 }}: {{ attempt.algorithm }} (Score: {{ attempt.score }})
+{% endfor %}
+{% endif %}
+
+Select the algorithm that is most likely to solve this problem effectively. Return only the name of the algorithm: "Best of N", "Tree of Thought", or "REBASE".

@@ -1,0 +1,21 @@
+You are an expert algorithm selector for problem-solving. Based on the problem description, select the most appropriate algorithm from the available options.
+
+Problem statement:
+{{ problem_statement }}
+
+Constraints:
+{{ constraints }}
+
+Available algorithms:
+{% for algorithm in available_algorithms %}
+- {{ algorithm }}: {% if algorithm == "Best of N" %}Generates multiple independent solutions and selects the best one. Good for straightforward problems with clear evaluation criteria.{% elif algorithm == "Tree of Thought" %}Explores multiple reasoning paths in a tree structure, allowing for backtracking. Good for problems requiring step-by-step reasoning.{% elif algorithm == "REBASE" %}Uses recursive refinement to improve plans through iterative feedback. Good for complex problems with many constraints.{% endif %}
+{% endfor %}
+
+{% if current_algorithm is defined %}
+Current algorithm: {{ current_algorithm }}
+Current plan score: {{ current_score }}
+Current plan:
+{{ current_plan }}
+{% endif %}
+
+Select the algorithm that is most likely to solve this problem effectively. Return only the name of the algorithm from the available options.

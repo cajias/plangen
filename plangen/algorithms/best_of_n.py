@@ -30,6 +30,7 @@ import numpy as np
 
 from .base_algorithm import BaseAlgorithm
 from ..utils.llm_interface import LLMInterface
+from ..utils.template_loader import TemplateLoader, TemplateError
 from ..verification import BaseVerifier
 
 
@@ -46,6 +47,7 @@ class BestOfN(BaseAlgorithm):
         parallel: Whether to generate plans in parallel
         min_similarity: Minimum similarity threshold for diverse sampling
         max_retries: Maximum number of retries for diverse sampling
+        domain: Optional domain name for domain-specific templates
     """
     
     SAMPLING_STRATEGIES = ["basic", "diverse", "adaptive"]
@@ -57,6 +59,7 @@ class BestOfN(BaseAlgorithm):
         parallel: bool = False,
         min_similarity: float = 0.3,
         max_retries: int = 5,
+        domain: Optional[str] = None,
         **kwargs,
     ):
         """Initialize the Best of N algorithm.
@@ -70,6 +73,7 @@ class BestOfN(BaseAlgorithm):
             parallel: Whether to generate plans in parallel
             min_similarity: Minimum similarity threshold for diverse sampling
             max_retries: Maximum number of retries for diverse sampling
+            domain: Optional domain name for domain-specific templates
             **kwargs: Additional arguments passed to BaseAlgorithm
         
         Raises:
@@ -88,6 +92,10 @@ class BestOfN(BaseAlgorithm):
         self.parallel = parallel
         self.min_similarity = min_similarity
         self.max_retries = max_retries
+        self.domain = domain
+        
+        # Initialize template loader
+        self.template_loader = TemplateLoader()
     
     def run(self, problem_statement: str) -> Tuple[str, float, Dict[str, Any]]:
         """Run the Best of N algorithm on the given problem statement.
@@ -97,54 +105,66 @@ class BestOfN(BaseAlgorithm):
             
         Returns:
             Tuple of (best_plan, best_score, metadata)
+            
+        Raises:
+            ValueError: If the problem statement is empty
+            RuntimeError: If there's an error during algorithm execution
         """
-        # Extract constraints
-        constraints = self.constraint_agent.run(problem_statement)
-        
-        # Select sampling function based on strategy
-        if self.sampling_strategy == "diverse":
-            sample_fn = self._diverse_sampling
-        elif self.sampling_strategy == "adaptive":
-            sample_fn = self._adaptive_sampling
-        else:
-            sample_fn = self._basic_sampling
-        
-        # Generate and evaluate plans
-        if self.parallel:
-            results = self._parallel_generate(
-                problem_statement, 
-                constraints,
-                sample_fn
-            )
-        else:
-            results = self._sequential_generate(
-                problem_statement, 
-                constraints,
-                sample_fn
-            )
-        
-        plans, scores, feedbacks = zip(*results)
-        
-        # Find the best plan
-        best_idx = max(range(len(scores)), key=lambda i: scores[i])
-        best_plan = plans[best_idx]
-        best_score = scores[best_idx]
-        
-        # Prepare metadata
-        metadata = {
-            "algorithm": "Best of N",
-            "n_plans": self.n_plans,
-            "sampling_strategy": self.sampling_strategy,
-            "parallel": self.parallel,
-            "all_scores": scores,
-            "all_feedbacks": feedbacks,
-            "constraints": constraints,
-            "best_index": best_idx,
-            "mean_score": np.mean(scores),
-            "std_score": np.std(scores),
-        }
-        
-        return best_plan, best_score, metadata
+        if not problem_statement.strip():
+            raise ValueError("Problem statement cannot be empty")
+            
+        try:
+            # Extract constraints
+            constraints = self.constraint_agent.run(problem_statement)
+            
+            # Select sampling function based on strategy
+            if self.sampling_strategy == "diverse":
+                sample_fn = self._diverse_sampling
+            elif self.sampling_strategy == "adaptive":
+                sample_fn = self._adaptive_sampling
+            else:
+                sample_fn = self._basic_sampling
+            
+            # Generate and evaluate plans
+            if self.parallel:
+                results = self._parallel_generate(
+                    problem_statement, 
+                    constraints,
+                    sample_fn
+                )
+            else:
+                results = self._sequential_generate(
+                    problem_statement, 
+                    constraints,
+                    sample_fn
+                )
+            
+            plans, scores, feedbacks = zip(*results)
+            
+            # Find the best plan
+            best_idx = max(range(len(scores)), key=lambda i: scores[i])
+            best_plan = plans[best_idx]
+            best_score = scores[best_idx]
+            
+            # Prepare metadata
+            metadata = {
+                "algorithm": "Best of N",
+                "n_plans": self.n_plans,
+                "sampling_strategy": self.sampling_strategy,
+                "parallel": self.parallel,
+                "all_scores": scores,
+                "all_feedbacks": feedbacks,
+                "constraints": constraints,
+                "best_index": best_idx,
+                "mean_score": np.mean(scores),
+                "std_score": np.std(scores),
+            }
+            
+            return best_plan, best_score, metadata
+            
+        except Exception as e:
+            raise RuntimeError(f"Error running Best of N algorithm: {str(e)}")
+    
     
     def _sequential_generate(
         self,
@@ -256,11 +276,32 @@ class BestOfN(BaseAlgorithm):
         Returns:
             Generated plan
         """
-        return self._generate_plan(
-            problem_statement, 
-            constraints,
-            temperature=self.temperature
-        )
+        try:
+            # Get the template for basic plan generation
+            template_path = self.template_loader.get_algorithm_template(
+                algorithm="best_of_n",
+                template_type="plan",
+                domain=self.domain
+            )
+            
+            # Render the template
+            prompt = self.template_loader.render_template(
+                template_path=template_path,
+                variables={
+                    "problem_statement": problem_statement,
+                    "constraints": constraints
+                }
+            )
+            
+            # Generate the plan
+            return self.llm_interface.generate(
+                prompt=prompt,
+                temperature=self.temperature
+            )
+        except Exception as e:
+            # Log the error and fall back to base implementation
+            print(f"Error in basic sampling: {str(e)}")
+            return super()._generate_plan(problem_statement, constraints, self.temperature)
     
     def _diverse_sampling(
         self,
@@ -283,10 +324,34 @@ class BestOfN(BaseAlgorithm):
         
         previous_plans = [r[0] for r in previous_results]
         
-        for _ in range(self.max_retries):
+        try:
+            # Get the template for diverse plan generation
+            template_path = self.template_loader.get_algorithm_template(
+                algorithm="best_of_n",
+                template_type="diverse_plan",
+                domain=self.domain
+            )
+            
+            # Render the template with existing plans
+            prompt = self.template_loader.render_template(
+                template_path=template_path,
+                variables={
+                    "problem_statement": problem_statement,
+                    "constraints": constraints,
+                    "existing_plans": previous_plans
+                }
+            )
+            
             # Generate with higher temperature for more diversity
-            plan = self._generate_plan(
-                problem_statement,
+            return self.llm_interface.generate(
+                prompt=prompt,
+                temperature=self.temperature * (1 + len(previous_results) * 0.1)
+            )
+        except Exception as e:
+            # Log the error and fall back to base implementation
+            print(f"Error in diverse sampling: {str(e)}")
+            return super()._generate_plan(
+                problem_statement, 
                 constraints,
                 temperature=self.temperature * (1 + len(previous_results) * 0.1)
             )
@@ -317,27 +382,43 @@ class BestOfN(BaseAlgorithm):
         if not previous_results:
             return self._basic_sampling(problem_statement, constraints, previous_results)
         
-        # Analyze previous results
-        prev_scores = [r[1] for r in previous_results]
-        prev_feedbacks = [r[2] for r in previous_results]
-        
-        # Extract insights from feedbacks
-        prompt = self._create_adaptive_prompt(
-            problem_statement,
-            constraints,
-            previous_results
-        )
-        
-        # Generate with adapted temperature based on score trend
-        score_trend = np.mean(prev_scores[-2:]) - np.mean(prev_scores[:-2]) if len(prev_scores) > 2 else 0
-        adapted_temp = self.temperature * (1 - score_trend * 0.1)  # Reduce temp if improving
-        
-        return self._generate_plan(
-            problem_statement,
-            constraints,
-            temperature=adapted_temp,
-            system_prompt=prompt
-        )
+        try:
+            # Get the template for adaptive plan generation
+            template_path = self.template_loader.get_algorithm_template(
+                algorithm="best_of_n",
+                template_type="adaptive_plan",
+                domain=self.domain
+            )
+            
+            # Format previous plans with their feedback and scores
+            plans_with_feedback = [(plan, feedback, score) for plan, score, feedback in previous_results]
+            
+            # Render the template with previous plans and feedback
+            prompt = self.template_loader.render_template(
+                template_path=template_path,
+                variables={
+                    "problem_statement": problem_statement,
+                    "constraints": constraints,
+                    "plans_with_feedback": plans_with_feedback
+                }
+            )
+            
+            # Analyze previous results for temperature adjustment
+            prev_scores = [r[1] for r in previous_results]
+            score_trend = np.mean(prev_scores[-2:]) - np.mean(prev_scores[:-2]) if len(prev_scores) > 2 else 0
+            adapted_temp = self.temperature * (1 - score_trend * 0.1)  # Reduce temp if improving
+            
+            # Generate the plan
+            return self.llm_interface.generate(
+                prompt=prompt,
+                temperature=adapted_temp
+            )
+        except Exception as e:
+            # Log the error and fall back to base implementation
+            print(f"Error in adaptive sampling: {str(e)}")
+            
+            # Fall back to diverse sampling if adaptive fails
+            return self._diverse_sampling(problem_statement, constraints, previous_results)
     
     def _is_diverse_enough(self, plan: str, previous_plans: List[str]) -> bool:
         """Check if a plan is diverse enough from previous plans.
@@ -369,6 +450,9 @@ class BestOfN(BaseAlgorithm):
     ) -> str:
         """Create a prompt that incorporates insights from previous attempts.
         
+        This method is deprecated and will be removed in a future version.
+        Use the template-based approach instead.
+        
         Args:
             problem_statement: The problem to solve
             constraints: List of constraints
@@ -379,6 +463,26 @@ class BestOfN(BaseAlgorithm):
         """
         # Extract best and worst results
         sorted_results = sorted(previous_results, key=lambda x: x[1], reverse=True)
+        best_plan, best_score, best_feedback = sorted_results[0]
+        
+        if len(sorted_results) > 1:
+            worst_plan, worst_score, worst_feedback = sorted_results[-1]
+        else:
+            worst_plan, worst_score, worst_feedback = best_plan, best_score, best_feedback
+        
+        # Create a prompt that includes insights from previous attempts
+        return (
+            f"Create a plan to solve the following problem. Learn from the strengths and "
+            f"weaknesses of previous plans.\n\n"
+            f"Problem statement:\n{problem_statement}\n\n"
+            f"Constraints to consider:\n" + 
+            "\n".join([f"- {constraint}" for constraint in constraints]) + 
+            f"\n\nBest previous plan (score: {best_score}):\n{best_plan}\n\n"
+            f"Feedback on best plan:\n{best_feedback}\n\n"
+            f"Worst previous plan (score: {worst_score}):\n{worst_plan}\n\n"
+            f"Feedback on worst plan:\n{worst_feedback}\n\n"
+            f"Your improved plan:"
+        )
         best_plan, best_score, best_feedback = sorted_results[0]
         worst_plan, worst_score, worst_feedback = sorted_results[-1]
         
