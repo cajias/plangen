@@ -8,8 +8,9 @@ from typing import Any, Dict, List, Optional, Tuple
 from ..agents.constraint_agent import ConstraintAgent
 from ..agents.verification_agent import VerificationAgent
 from ..utils.llm_interface import LLMInterface
+from ..visualization.observers import Observable
 
-class BaseAlgorithm(ABC):
+class BaseAlgorithm(ABC, Observable):
     """Base class for all PlanGEN algorithms."""
     
     def __init__(
@@ -31,6 +32,9 @@ class BaseAlgorithm(ABC):
             temperature: Temperature for LLM generation
             max_iterations: Maximum number of iterations for the algorithm
         """
+        # Initialize Observable
+        Observable.__init__(self)
+        
         self.llm_interface = llm_interface or LLMInterface(
             model_name=model_name,
             temperature=temperature,
@@ -46,6 +50,7 @@ class BaseAlgorithm(ABC):
         
         self.max_iterations = max_iterations
         self.temperature = temperature
+        self.algorithm_name = self.__class__.__name__
         
         self.plan_generation_prompt_template = (
             "Create a detailed plan to solve the following problem. "

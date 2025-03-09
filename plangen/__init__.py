@@ -11,6 +11,11 @@ from .agents import (
     SelectionAgent,
 )
 from .plangen import PlanGEN
+from .visualization import (
+    GraphRenderer,
+    PlanObserver,
+    Observable,
+)
 
 __all__ = [
     "PlanGEN",
@@ -18,4 +23,7 @@ __all__ = [
     "SolutionAgent",
     "VerificationAgent",
     "SelectionAgent",
+    "GraphRenderer",
+    "PlanObserver",
+    "Observable",
 ]

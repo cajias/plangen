@@ -88,6 +88,7 @@ class TreeOfThought(BaseAlgorithm):
         
         # Initialize the tree with a root node
         root = {
+            "id": "root",
             "steps": [],
             "score": 0,
             "depth": 0,
@@ -104,11 +105,23 @@ class TreeOfThought(BaseAlgorithm):
         # Track all explored paths for metadata
         all_paths = []
         
+        # Notify observers about the algorithm start
+        self.notify_observers({
+            "algorithm_type": "TreeOfThought",
+            "event": "algorithm_start",
+            "problem_statement": problem_statement,
+            "constraints": constraints,
+            "new_nodes": [root]
+        })
+        
         # Explore the tree up to max_depth
         for depth in range(self.max_depth):
             next_beam = []
+            depth_nodes = []  # Collect nodes at this depth for visualization
             
             for node in beam:
+                node_id = node.get("id", f"node_{id(node)}")
+                
                 # Check if the current plan is complete
                 if self._is_complete(problem_statement, node["steps"]):
                     node["complete"] = True
@@ -123,15 +136,20 @@ class TreeOfThought(BaseAlgorithm):
                         best_score = score
                     
                     # Add to all paths
-                    all_paths.append({
+                    path_info = {
+                        "id": f"complete_{node_id}_{depth}",
+                        "parent_id": node_id,
                         "steps": node["steps"],
                         "score": score,
                         "feedback": feedback,
                         "depth": depth,
                         "complete": True
-                    })
+                    }
+                    all_paths.append(path_info)
+                    depth_nodes.append(path_info)
                     
                     # Add to next beam to keep this complete solution
+                    node["score"] = score  # Update with actual score
                     next_beam.append(node)
                     continue
                 
@@ -143,7 +161,7 @@ class TreeOfThought(BaseAlgorithm):
                 )
                 
                 # Evaluate each next step
-                for next_step in next_steps:
+                for i, next_step in enumerate(next_steps):
                     new_steps = node["steps"] + [next_step]
                     new_plan_text = "\n".join(new_steps)
                     
@@ -156,7 +174,10 @@ class TreeOfThought(BaseAlgorithm):
                     )
                     
                     # Create a new node
+                    new_node_id = f"node_{node_id}_{depth}_{i}"
                     new_node = {
+                        "id": new_node_id,
+                        "parent_id": node_id,
                         "steps": new_steps,
                         "score": step_score,
                         "depth": depth + 1,
@@ -167,14 +188,17 @@ class TreeOfThought(BaseAlgorithm):
                     # Add to next beam
                     next_beam.append(new_node)
                     
-                    # Add to all paths
-                    all_paths.append({
-                        "steps": new_steps,
-                        "score": step_score,
-                        "feedback": step_feedback,
-                        "depth": depth + 1,
-                        "complete": False
-                    })
+                    # Add to all paths and depth nodes
+                    all_paths.append(new_node)
+                    depth_nodes.append(new_node)
+            
+            # Notify observers about the new depth exploration
+            self.notify_observers({
+                "algorithm_type": "TreeOfThought",
+                "event": "depth_exploration",
+                "depth": depth,
+                "new_nodes": depth_nodes
+            })
             
             # If we have any complete solutions, prioritize them
             complete_solutions = [node for node in next_beam if node["complete"]]
@@ -187,12 +211,27 @@ class TreeOfThought(BaseAlgorithm):
                 best_plan = "\n".join(best_complete["steps"])
                 best_score = best_complete["score"]
                 
+                # Notify observers about the completion
+                self.notify_observers({
+                    "algorithm_type": "TreeOfThought",
+                    "event": "complete_solution_found",
+                    "solution": best_complete
+                })
+                
                 # We can stop here as we found a complete solution
                 break
             
             # Keep only the beam_width best plans based on score
             next_beam.sort(key=lambda x: x["score"], reverse=True)
             beam = next_beam[:self.beam_width]
+            
+            # Notify observers about the beam update
+            self.notify_observers({
+                "algorithm_type": "TreeOfThought",
+                "event": "beam_update",
+                "depth": depth,
+                "beam": beam
+            })
             
             # If all paths in the beam are complete, we can stop
             if all(node["complete"] for node in beam):
@@ -203,6 +242,13 @@ class TreeOfThought(BaseAlgorithm):
             best_node = max(beam, key=lambda x: x["score"])
             best_plan = "\n".join(best_node["steps"])
             best_score = best_node["score"]
+            
+            # Notify observers about the best incomplete solution
+            self.notify_observers({
+                "algorithm_type": "TreeOfThought",
+                "event": "incomplete_solution_selected",
+                "solution": best_node
+            })
         
         # Prepare metadata
         metadata = {
@@ -213,6 +259,20 @@ class TreeOfThought(BaseAlgorithm):
             "all_paths": all_paths,
             "constraints": constraints,
         }
+        
+        # Notify observers about the algorithm completion
+        self.notify_observers({
+            "algorithm_type": "TreeOfThought",
+            "event": "algorithm_complete",
+            "best_plan": best_plan,
+            "best_score": best_score,
+            "metadata": {
+                "branching_factor": self.branching_factor,
+                "max_depth": self.max_depth,
+                "beam_width": self.beam_width,
+                "total_paths": len(all_paths)
+            }
+        })
         
         return best_plan, best_score, metadata
     
