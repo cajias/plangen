@@ -14,8 +14,8 @@ Available algorithms:
 
 from .base_algorithm import BaseAlgorithm
 from .best_of_n import BestOfN
-from .tree_of_thought import TreeOfThought
-from .rebase import REBASE
 from .mixture_of_algorithms import MixtureOfAlgorithms
+from .rebase import REBASE
+from .tree_of_thought import TreeOfThought
 
 __all__ = ["BaseAlgorithm", "BestOfN", "TreeOfThought", "REBASE", "MixtureOfAlgorithms"]

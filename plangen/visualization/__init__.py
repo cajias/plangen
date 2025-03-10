@@ -1,6 +1,6 @@
 # Visualization module for plan generation algorithms
 
-from .observers import PlanObserver, Observable
 from .graph_renderer import GraphRenderer
+from .observers import Observable, PlanObserver
 
-__all__ = ['PlanObserver', 'Observable', 'GraphRenderer']
+__all__ = ["PlanObserver", "Observable", "GraphRenderer"]

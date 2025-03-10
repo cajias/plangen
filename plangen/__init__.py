@@ -6,15 +6,15 @@ __version__ = "0.1.0"
 
 from .agents import (
     ConstraintAgent,
+    SelectionAgent,
     SolutionAgent,
     VerificationAgent,
-    SelectionAgent,
 )
 from .plangen import PlanGEN
 from .visualization import (
     GraphRenderer,
-    PlanObserver,
     Observable,
+    PlanObserver,
 )
 
 __all__ = [
