@@ -2,14 +2,15 @@
 Replication of experiments from the PlanGEN paper
 """
 
-import os
 import json
+import os
 import time
-from typing import Dict, List, Any
+from typing import Any, Dict, List
+
 from dotenv import load_dotenv
 
 from plangen import PlanGEN
-from plangen.models import OpenAIModelInterface, BedrockModelInterface
+from plangen.models import BedrockModelInterface, OpenAIModelInterface
 from plangen.prompts import PromptManager
 
 # Load environment variables from .env file
@@ -49,13 +50,15 @@ TEST_PROBLEMS = [
 ]
 
 
-def run_experiment(problems: List[Dict[str, str]], model_type: str = "openai") -> Dict[str, Any]:
+def run_experiment(
+    problems: List[Dict[str, str]], model_type: str = "openai"
+) -> Dict[str, Any]:
     """Run the experiment on the given problems.
-    
+
     Args:
         problems: List of problem dictionaries with name and description
         model_type: Type of model to use ("openai" or "bedrock")
-        
+
     Returns:
         Dictionary with experiment results
     """
@@ -67,7 +70,9 @@ def run_experiment(problems: List[Dict[str, str]], model_type: str = "openai") -
             max_tokens=1024,
         )
         print(f"Using OpenAI model: gpt-4o")
-    elif model_type == "bedrock" and (os.environ.get("AWS_PROFILE") or os.environ.get("AWS_ACCESS_KEY_ID")):
+    elif model_type == "bedrock" and (
+        os.environ.get("AWS_PROFILE") or os.environ.get("AWS_ACCESS_KEY_ID")
+    ):
         model = BedrockModelInterface(
             model_id="anthropic.claude-3-sonnet-20240229-v1:0",
             temperature=0.7,
@@ -78,31 +83,31 @@ def run_experiment(problems: List[Dict[str, str]], model_type: str = "openai") -
         raise ValueError(
             f"Cannot use {model_type} model. Please set appropriate API credentials."
         )
-    
+
     # Initialize prompt manager
     prompt_manager = PromptManager()
-    
+
     # Initialize PlanGEN
     plangen = PlanGEN(
         model=model,
         prompt_manager=prompt_manager,
         num_solutions=3,
     )
-    
+
     # Run experiments
     results = {
         "model_type": model_type,
         "problems": [],
     }
-    
+
     for problem in problems:
         print(f"\n\n=== Solving: {problem['name']} ===")
         print(f"Problem: {problem['description']}")
-        
+
         start_time = time.time()
         result = plangen.solve(problem["description"])
         end_time = time.time()
-        
+
         problem_result = {
             "name": problem["name"],
             "description": problem["description"],
@@ -112,12 +117,14 @@ def run_experiment(problems: List[Dict[str, str]], model_type: str = "openai") -
             "selected_solution": result["selected_solution"],
             "time_taken": end_time - start_time,
         }
-        
+
         results["problems"].append(problem_result)
-        
+
         print(f"Time taken: {end_time - start_time:.2f} seconds")
-        print(f"Selected solution index: {result['selected_solution']['selected_index']}")
-    
+        print(
+            f"Selected solution index: {result['selected_solution']['selected_index']}"
+        )
+
     return results
 
 
@@ -131,7 +138,7 @@ def main():
         print("\nOpenAI results saved to plangen_openai_results.json")
     except ValueError as e:
         print(f"Skipping OpenAI experiment: {e}")
-    
+
     # Run experiment with Bedrock model
     try:
         bedrock_results = run_experiment(TEST_PROBLEMS, model_type="bedrock")

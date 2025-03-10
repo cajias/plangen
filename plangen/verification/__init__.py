@@ -6,11 +6,11 @@ verification strategies for validating solutions to different types of problems.
 """
 
 from .base_verifier import BaseVerifier
-from .verifier_factory import VerifierFactory
 from .strategies.math_verifier import MathVerifier
+from .verifier_factory import VerifierFactory
 
 __all__ = [
-    'BaseVerifier',
-    'VerifierFactory',
-    'MathVerifier',
+    "BaseVerifier",
+    "VerifierFactory",
+    "MathVerifier",
 ]
