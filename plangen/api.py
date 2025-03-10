@@ -393,7 +393,7 @@ class Algorithm:
         Returns:
             Configured algorithm instance
         """
-        from .algorithms import BestOfN, MixtureOfAlgorithms, REBASE, TreeOfThought
+        from .algorithms import REBASE, BestOfN, MixtureOfAlgorithms, TreeOfThought
         from .utils import LLMInterface
 
         # Convert model to LLMInterface if needed

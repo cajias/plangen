@@ -5,7 +5,7 @@ This file demonstrates how to use each of the planning algorithms
 available in the PlanGEN framework through the new API.
 """
 
-from plangen import PlanGen, Algorithm, Visualization
+from plangen import Algorithm, PlanGen, Visualization
 
 
 def best_of_n_example():

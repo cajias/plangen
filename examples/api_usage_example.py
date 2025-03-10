@@ -4,7 +4,7 @@ Example usage of the new PlanGEN public API.
 This file demonstrates how to use the new simplified API to solve planning problems.
 """
 
-from plangen import PlanGen, Algorithm, Visualization, Verifiers
+from plangen import Algorithm, PlanGen, Verifiers, Visualization
 
 
 def basic_usage_example():

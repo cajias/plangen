@@ -7,9 +7,6 @@ This framework implements the PlanGEN workflow described in the paper
 
 __version__ = "0.1.0"
 
-# Import public API classes - the recommended interface for users
-from .api import PlanGen, Algorithm, Visualization, Verifiers
-
 # Import original classes for backward compatibility
 from .agents import (
     ConstraintAgent,
@@ -17,6 +14,9 @@ from .agents import (
     SolutionAgent,
     VerificationAgent,
 )
+
+# Import public API classes - the recommended interface for users
+from .api import Algorithm, PlanGen, Verifiers, Visualization
 from .plangen import PlanGEN
 from .visualization import (
     GraphRenderer,
