@@ -1,7 +1,7 @@
 """
 PlanGEN: A multi-agent framework for generating planning and reasoning trajectories
 
-This framework implements the PlanGEN workflow described in the paper 
+This framework implements the PlanGEN workflow described in the paper
 "PlanGEN: Generative Planning with Large Language Models".
 """
 
@@ -30,7 +30,6 @@ __all__ = [
     "Algorithm",
     "Visualization",
     "Verifiers",
-    
     # Legacy classes (for backward compatibility)
     "PlanGEN",
     "ConstraintAgent",
