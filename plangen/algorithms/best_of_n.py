@@ -350,7 +350,7 @@ class BestOfN(BaseAlgorithm):
         except Exception as e:
             # Log the error and fall back to base implementation
             print(f"Error in diverse sampling: {str(e)}")
-            return super()._generate_plan(
+            plan = super()._generate_plan(
                 problem_statement, 
                 constraints,
                 temperature=self.temperature * (1 + len(previous_results) * 0.1)
@@ -361,7 +361,9 @@ class BestOfN(BaseAlgorithm):
                 return plan
         
         # If we couldn't generate a diverse plan, return the last attempt
-        return plan
+        # This should never happen in practice as we're in the exception handler above
+        # but we need to have a valid fallback
+        return self._basic_sampling(problem_statement, constraints, [])
     
     def _adaptive_sampling(
         self,
