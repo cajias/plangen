@@ -13,7 +13,9 @@ def basic_usage_example():
     plangen = PlanGen.create()
 
     # Define a simple problem
-    problem = "Design an algorithm to find the kth largest element in an unsorted array."
+    problem = (
+        "Design an algorithm to find the kth largest element in an unsorted array."
+    )
 
     # Solve the problem using the default workflow
     result = plangen.solve(problem)
@@ -67,7 +69,9 @@ def direct_api_example():
     plangen = PlanGen.create()
 
     # Define a problem
-    problem = "Create a plan for organizing a conference with 100 attendees over 2 days."
+    problem = (
+        "Create a plan for organizing a conference with 100 attendees over 2 days."
+    )
 
     # Extract constraints
     constraints = plangen.extract_constraints(problem)
@@ -85,7 +89,12 @@ def direct_api_example():
     print(f"\nVerification score: {score}")
     print(f"Feedback: {feedback}")
 
-    return {"problem": problem, "constraints": constraints, "plan": plan, "score": score}
+    return {
+        "problem": problem,
+        "constraints": constraints,
+        "plan": plan,
+        "score": score,
+    }
 
 
 def visualization_example(result):

@@ -600,7 +600,9 @@ class Verifiers:
         from .verification import BaseVerifier
 
         class CustomVerifier(BaseVerifier):
-            def verify(self, problem: str, constraints: List[str], plan: str) -> Tuple[str, float]:
+            def verify(
+                self, problem: str, constraints: List[str], plan: str
+            ) -> Tuple[str, float]:
                 return verify_function(problem, constraints, plan)
 
         return CustomVerifier(**kwargs)
