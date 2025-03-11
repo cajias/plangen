@@ -16,10 +16,8 @@ from .visualization import (
     PlanObserver,
 )
 
-# Import original classes for backward compatibility
-# Using the module versions (not the package)
-# These are legacy interfaces and the implementation in plangen/agents.py
-from .agents_legacy import (
+# Import agent classes
+from .agents import (
     ConstraintAgent,
     SelectionAgent,
     SolutionAgent,

@@ -1,30 +1,29 @@
 # PlanGEN Agents
 
-This directory contains the agent implementations for the PlanGEN framework. These are the modern implementations that should be used for new code.
+## Current Implementation Status
 
-## Overview
+Currently, the PlanGEN framework has two parallel agent implementations:
 
-The agents directory contains the following files:
+1. **Main Implementation** (in `plangen/agents.py`):
+   - Used by `plangen.py` and the core workflow
+   - Has a prompt-manager and model-based interface
+   - Used when importing directly from plangen: `from plangen import ConstraintAgent`
 
-- `__init__.py`: Re-exports the agent classes from the individual modules
-- `base_agent.py`: Contains the `BaseAgent` class that all agents inherit from
-- `constraint_agent.py`: Contains the `ConstraintAgent` class for extracting constraints from problem statements
-- `selection_agent.py`: Contains the `SelectionAgent` class for selecting the best solution
-- `solution_agent.py`: Contains the `SolutionAgent` class for generating solutions
-- `verification_agent.py`: Contains the `VerificationAgent` class for verifying solutions
+2. **Package Implementation** (in `plangen/agents/*.py`):
+   - Newer implementation with different interfaces
+   - Has LLM-interface based design
+   - Currently not used by core parts of the framework
+
+For consistency, the `plangen/agents/__init__.py` file currently re-exports the main implementation classes from `plangen/agents.py`.
+
+## Future Direction
+
+These implementations will be unified in the future to provide a single, consistent interface. Until then, use whichever interface is most appropriate for your use case.
 
 ## Usage
 
 ```python
-from plangen.agents import ConstraintAgent, SelectionAgent, SolutionAgent, VerificationAgent
+# These are identical:
+from plangen import ConstraintAgent
+from plangen.agents import ConstraintAgent
 ```
-
-## Legacy APIs
-
-For backward compatibility, you can still use the legacy agent classes from the `agents.py` module:
-
-```python
-from plangen import ConstraintAgent, SelectionAgent, SolutionAgent, VerificationAgent
-```
-
-However, this approach is deprecated and will be removed in a future version. The legacy implementation can be found in the `plangen/agents_legacy.py` file.

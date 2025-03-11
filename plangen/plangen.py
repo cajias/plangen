@@ -8,7 +8,8 @@ from langgraph.graph import END, StateGraph
 from langgraph.prebuilt import ToolNode
 from pydantic import BaseModel, Field
 
-from .agents_legacy import ConstraintAgent, SelectionAgent, SolutionAgent, VerificationAgent
+# Import from the main agents module, not the package
+from .agents import ConstraintAgent, SelectionAgent, SolutionAgent, VerificationAgent
 from .models import BaseModelInterface, OpenAIModelInterface
 from .prompts import PromptManager
 
