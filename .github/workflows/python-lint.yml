@@ -18,24 +18,29 @@ jobs:
       with:
         python-version: '3.9'
     
+    - name: Install Poetry
+      uses: snok/install-poetry@v1
+      with:
+        version: 1.7.1
+        virtualenvs-create: true
+        virtualenvs-in-project: true
+    
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade pip
-        # Install with all dependencies
-        python -m pip install ruff black isort click
+        poetry install --with dev
     
     - name: Lint with ruff
       run: |
         # Check for syntax errors and undefined names
-        ruff check . --select=E9,F63,F7,F82 --target-version=py37 || echo "Ruff check failed, but continuing..."
+        poetry run ruff check . --select=E9,F63,F7,F82 || echo "Ruff check failed, but continuing..."
     
     - name: Check formatting with black
       run: |
-        black --check --diff . || echo "Black check failed, but continuing..."
+        poetry run black --check --diff . || echo "Black check failed, but continuing..."
     
     - name: Check import order with isort
       run: |
-        isort --check-only --profile black . || echo "Isort check failed, but continuing..."
+        poetry run isort --check-only --profile black . || echo "Isort check failed, but continuing..."
         
     # Ensure the job passes regardless of lint errors
     - name: Always succeed
