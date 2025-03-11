@@ -31,22 +31,18 @@ For comprehensive documentation, please see the [docs](docs/index.md) directory:
 
 ## Installation
 
-### Installing from GitHub Packages (recommended)
+### Installing from PyPI (recommended)
 
-PlanGEN is available as a package from GitHub Packages. You can install it directly using pip:
+PlanGEN is available on PyPI. You can install it directly using pip:
 
 ```bash
-# Create or edit ~/.pip/pip.conf (or %APPDATA%\pip\pip.ini on Windows)
-# Add the following:
-[global]
-index-url = https://pypi.org/simple
-extra-index-url = https://USERNAME:TOKEN@maven.pkg.github.com/cajias/plangen/
-
-# Replace USERNAME with your GitHub username
-# Replace TOKEN with a GitHub personal access token with the 'read:packages' scope
-
-# Install the package
 pip install plangen
+```
+
+For the latest development version, you can install from TestPyPI:
+
+```bash
+pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ plangen
 ```
 
 ### Installing with Poetry
@@ -54,15 +50,8 @@ pip install plangen
 Alternatively, you can add PlanGEN to your Poetry project:
 
 ```bash
-# Configure Poetry to use GitHub Packages
-poetry config repositories.plangen https://maven.pkg.github.com/cajias/plangen
-poetry config http-basic.plangen USERNAME TOKEN
-
-# Replace USERNAME with your GitHub username
-# Replace TOKEN with a GitHub personal access token with the 'read:packages' scope
-
 # Add the package to your project
-poetry add plangen --source plangen
+poetry add plangen
 ```
 
 ### Development Installation

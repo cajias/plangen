@@ -8,7 +8,13 @@ readme = "README.md"
 license = "MIT"
 repository = "https://github.com/cajias/plangen"
 documentation = "https://github.com/cajias/plangen/tree/main/docs"
+homepage = "https://github.com/cajias/plangen"
 keywords = ["llm", "planning", "agents", "multi-agent", "generative-ai"]
+
+# PyPI-specific fields
+[tool.poetry.urls]
+"Bug Tracker" = "https://github.com/cajias/plangen/issues"
+"Changelog" = "https://github.com/cajias/plangen/releases"
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
