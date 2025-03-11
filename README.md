@@ -11,6 +11,17 @@ PlanGEN is a framework for solving complex problems using a multi-agent approach
 - Solution selection
 - Support for multiple LLM backends (OpenAI, AWS Bedrock)
 - Multiple interchangeable planning algorithms
+- Clean, well-documented public API
+- Visualization capabilities
+
+## Documentation
+
+For comprehensive documentation, please see the [docs](docs/index.md) directory:
+
+- [User Guide](docs/user_guide/index.md): Step-by-step guides for using PlanGEN
+- [API Reference](docs/api_reference/index.md): Complete reference for all public classes and methods
+- [Algorithm Reference](docs/algorithm_reference/index.md): Detailed explanation of planning algorithms
+- [Examples](docs/examples/index.md): Code examples for various scenarios
 
 ## Installation
 
