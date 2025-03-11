@@ -34,9 +34,9 @@ jobs:
         virtualenvs-create: true
         virtualenvs-in-project: true
     
-    - name: Configure Poetry
+    - name: Configure Poetry for GitHub Packages
       run: |
-        poetry config repositories.github https://github.com/cajias/plangen
+        poetry config repositories.github https://maven.pkg.github.com/cajias/plangen
         poetry config http-basic.github ${{ github.actor }} ${{ secrets.GITHUB_TOKEN }}
     
     - name: Update version if workflow dispatch
