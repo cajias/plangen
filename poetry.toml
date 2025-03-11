@@ -1,0 +1,10 @@
+[virtualenvs]
+in-project = true
+create = true
+
+[repositories]
+# If needed, add custom repositories here
+
+[installer]
+parallel = true
+# Optional: Configure installer parameters if needed

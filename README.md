@@ -14,6 +14,27 @@ PlanGEN is a framework for solving complex problems using a multi-agent approach
 
 ## Installation
 
+### Using Poetry (recommended)
+
+This project uses [Poetry](https://python-poetry.org/) for dependency management. To install with Poetry:
+
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/plangen.git
+cd plangen
+
+# Install dependencies with Poetry
+# If you don't have Poetry installed, see https://python-poetry.org/docs/#installation
+poetry install
+
+# Activate the virtual environment
+poetry shell
+```
+
+### Using pip
+
+Alternatively, you can install using pip:
+
 ```bash
 # Clone the repository
 git clone https://github.com/yourusername/plangen.git
