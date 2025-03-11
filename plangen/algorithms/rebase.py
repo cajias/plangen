@@ -81,6 +81,16 @@ class REBASE(BaseAlgorithm):
         formatted_constraints = "\n".join(
             [f"- {constraint}" for constraint in constraints]
         )
+        
+        # Notify observers about algorithm start
+        self.notify_observers(
+            {
+                "algorithm_type": "REBASE",
+                "event": "algorithm_start",
+                "problem_statement": problem_statement,
+                "constraints": constraints,
+            }
+        )
 
         # Generate initial plan
         current_plan = self._generate_initial_plan(
@@ -94,6 +104,18 @@ class REBASE(BaseAlgorithm):
         iterations = [
             {"plan": current_plan, "score": current_score, "feedback": current_feedback}
         ]
+        
+        # Notify observers about initial plan
+        self.notify_observers(
+            {
+                "algorithm_type": "REBASE",
+                "event": "initial_plan",
+                "iteration": 0,
+                "plan": current_plan,
+                "score": current_score,
+                "feedback": current_feedback,
+            }
+        )
 
         # Iteratively refine the plan
         for iteration in range(self.max_iterations):
@@ -115,9 +137,33 @@ class REBASE(BaseAlgorithm):
                     "feedback": refined_feedback,
                 }
             )
+            
+            # Notify observers about refined plan
+            self.notify_observers(
+                {
+                    "algorithm_type": "REBASE",
+                    "event": "plan_refinement",
+                    "iteration": iteration + 1,
+                    "plan": refined_plan,
+                    "score": refined_score,
+                    "feedback": refined_feedback,
+                    "previous_score": current_score,
+                    "improvement": refined_score - current_score,
+                }
+            )
 
             # Check if improvement is significant
             if refined_score <= current_score + self.improvement_threshold:
+                # Notify observers about stopping due to insufficient improvement
+                self.notify_observers(
+                    {
+                        "algorithm_type": "REBASE",
+                        "event": "refinement_stopped",
+                        "reason": "insufficient_improvement",
+                        "improvement": refined_score - current_score,
+                        "threshold": self.improvement_threshold,
+                    }
+                )
                 break
 
             # Update current plan
@@ -133,6 +179,21 @@ class REBASE(BaseAlgorithm):
             "iterations": iterations,
             "constraints": constraints,
         }
+        
+        # Notify observers about algorithm completion
+        self.notify_observers(
+            {
+                "algorithm_type": "REBASE",
+                "event": "algorithm_complete",
+                "best_plan": current_plan,
+                "best_score": current_score,
+                "total_iterations": len(iterations) - 1,
+                "metadata": {
+                    "max_iterations": self.max_iterations,
+                    "improvement_threshold": self.improvement_threshold,
+                },
+            }
+        )
 
         return current_plan, current_score, metadata
 

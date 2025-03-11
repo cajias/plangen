@@ -117,6 +117,18 @@ class BestOfN(BaseAlgorithm):
         try:
             # Extract constraints
             constraints = self.constraint_agent.run(problem_statement)
+            
+            # Notify observers about algorithm start
+            self.notify_observers(
+                {
+                    "algorithm_type": "BestOfN",
+                    "event": "algorithm_start",
+                    "problem_statement": problem_statement,
+                    "constraints": constraints,
+                    "n_plans": self.n_plans,
+                    "sampling_strategy": self.sampling_strategy,
+                }
+            )
 
             # Select sampling function based on strategy
             if self.sampling_strategy == "diverse":
@@ -142,6 +154,17 @@ class BestOfN(BaseAlgorithm):
             best_idx = max(range(len(scores)), key=lambda i: scores[i])
             best_plan = plans[best_idx]
             best_score = scores[best_idx]
+            
+            # Notify observers about the best plan selection
+            self.notify_observers(
+                {
+                    "algorithm_type": "BestOfN",
+                    "event": "best_plan_selected",
+                    "best_plan_id": best_idx,
+                    "best_plan": best_plan,
+                    "best_score": best_score,
+                }
+            )
 
             # Prepare metadata
             metadata = {
@@ -156,6 +179,23 @@ class BestOfN(BaseAlgorithm):
                 "mean_score": np.mean(scores),
                 "std_score": np.std(scores),
             }
+            
+            # Notify observers about algorithm completion
+            self.notify_observers(
+                {
+                    "algorithm_type": "BestOfN",
+                    "event": "algorithm_complete",
+                    "best_plan": best_plan,
+                    "best_score": best_score,
+                    "total_plans": len(plans),
+                    "metadata": {
+                        "n_plans": self.n_plans,
+                        "sampling_strategy": self.sampling_strategy,
+                        "mean_score": float(np.mean(scores)),
+                        "std_score": float(np.std(scores)),
+                    },
+                }
+            )
 
             return best_plan, best_score, metadata
 
@@ -177,6 +217,16 @@ class BestOfN(BaseAlgorithm):
         """
         results = []
         for i in range(self.n_plans):
+            # Notify observers about plan generation start
+            self.notify_observers(
+                {
+                    "algorithm_type": "BestOfN",
+                    "event": "plan_generation_start",
+                    "plan_id": i,
+                    "sampling_strategy": self.sampling_strategy,
+                }
+            )
+            
             plan = sample_fn(
                 problem_statement,
                 constraints,
@@ -185,6 +235,19 @@ class BestOfN(BaseAlgorithm):
 
             feedback, score = self._verify_plan(problem_statement, constraints, plan)
             results.append((plan, score, feedback))
+            
+            # Notify observers about plan generation completion
+            self.notify_observers(
+                {
+                    "algorithm_type": "BestOfN",
+                    "event": "plan_generation_complete",
+                    "plan_id": i,
+                    "plan": plan,
+                    "score": score,
+                    "verification": feedback,
+                    "is_selected": False,  # Will be updated later if selected
+                }
+            )
 
         return results
 
@@ -246,8 +309,35 @@ class BestOfN(BaseAlgorithm):
         Returns:
             Tuple of (plan, score, feedback)
         """
+        # Calculate plan_id based on number of previous results
+        plan_id = len(previous_results)
+        
+        # Notify observers about plan generation start
+        self.notify_observers(
+            {
+                "algorithm_type": "BestOfN",
+                "event": "plan_generation_start",
+                "plan_id": plan_id,
+                "sampling_strategy": self.sampling_strategy,
+            }
+        )
+        
         plan = sample_fn(problem_statement, constraints, previous_results)
         feedback, score = self._verify_plan(problem_statement, constraints, plan)
+        
+        # Notify observers about plan generation completion
+        self.notify_observers(
+            {
+                "algorithm_type": "BestOfN",
+                "event": "plan_generation_complete",
+                "plan_id": plan_id,
+                "plan": plan,
+                "score": score,
+                "verification": feedback,
+                "is_selected": False,  # Will be updated later if selected
+            }
+        )
+        
         return plan, score, feedback
 
     def _basic_sampling(

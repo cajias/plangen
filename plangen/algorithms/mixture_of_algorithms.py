@@ -27,13 +27,14 @@ from typing import Any, Dict, List, Optional, Tuple
 from ..agents.selection_agent import SelectionAgent
 from ..utils.llm_interface import LLMInterface
 from ..utils.template_loader import TemplateLoader
+from ..visualization.observers import PlanObserver
 from .base_algorithm import BaseAlgorithm
 from .best_of_n import BestOfN
 from .rebase import REBASE
 from .tree_of_thought import TreeOfThought
 
 
-class MixtureOfAlgorithms(BaseAlgorithm):
+class MixtureOfAlgorithms(BaseAlgorithm, PlanObserver):
     """Implementation of the Mixture of Algorithms approach.
 
     This algorithm dynamically selects the best inference algorithm based on
@@ -111,17 +112,55 @@ class MixtureOfAlgorithms(BaseAlgorithm):
         formatted_constraints = "\n".join(
             [f"- {constraint}" for constraint in constraints]
         )
+        
+        # Notify observers about algorithm start
+        self.notify_observers(
+            {
+                "algorithm_type": "MixtureOfAlgorithms",
+                "event": "algorithm_start",
+                "problem_statement": problem_statement,
+                "constraints": constraints,
+                "max_algorithm_switches": self.max_algorithm_switches,
+            }
+        )
 
         # Select initial algorithm
         current_algorithm_name = self._select_algorithm(problem_statement, constraints)
         current_algorithm = self.algorithms[current_algorithm_name]
+        
+        # Notify observers about algorithm selection
+        self.notify_observers(
+            {
+                "algorithm_type": "MixtureOfAlgorithms",
+                "event": "algorithm_selection",
+                "selected_algorithm": current_algorithm_name,
+                "selection_type": "initial",
+                "selection_reason": "Initial algorithm selection based on problem characteristics",
+            }
+        )
 
         # Track algorithm switches
         algorithm_history = [current_algorithm_name]
 
+        # Register this instance as an observer to all algorithms
+        for algo in self.algorithms.values():
+            algo.add_observer(self)
+
         # Run initial algorithm
         current_plan, current_score, current_metadata = current_algorithm.run(
             problem_statement
+        )
+        
+        # Notify observers about algorithm completion
+        self.notify_observers(
+            {
+                "algorithm_type": "MixtureOfAlgorithms",
+                "event": "algorithm_iteration_complete",
+                "algorithm": current_algorithm_name,
+                "plan": current_plan,
+                "score": current_score,
+                "iteration": 0,
+            }
         )
 
         # Track all iterations for metadata
@@ -135,7 +174,7 @@ class MixtureOfAlgorithms(BaseAlgorithm):
         ]
 
         # Iteratively switch algorithms if needed
-        for _ in range(self.max_algorithm_switches):
+        for iteration in range(self.max_algorithm_switches):
             # Select next algorithm based on current results
             next_algorithm_name = self._select_next_algorithm(
                 problem_statement,
@@ -147,16 +186,49 @@ class MixtureOfAlgorithms(BaseAlgorithm):
 
             # If same algorithm selected, we're done
             if next_algorithm_name == current_algorithm_name:
+                # Notify observers about no algorithm switch
+                self.notify_observers(
+                    {
+                        "algorithm_type": "MixtureOfAlgorithms",
+                        "event": "algorithm_switch_skipped",
+                        "reason": "Same algorithm selected",
+                        "algorithm": current_algorithm_name,
+                    }
+                )
                 break
 
             # Switch to next algorithm
             current_algorithm_name = next_algorithm_name
             current_algorithm = self.algorithms[current_algorithm_name]
             algorithm_history.append(current_algorithm_name)
+            
+            # Notify observers about algorithm switch
+            self.notify_observers(
+                {
+                    "algorithm_type": "MixtureOfAlgorithms",
+                    "event": "algorithm_selection",
+                    "selected_algorithm": current_algorithm_name,
+                    "selection_type": "switch",
+                    "iteration": iteration + 1,
+                    "selection_reason": f"Switching to {current_algorithm_name} based on previous results",
+                }
+            )
 
             # Run next algorithm
             next_plan, next_score, next_metadata = current_algorithm.run(
                 problem_statement
+            )
+            
+            # Notify observers about algorithm completion
+            self.notify_observers(
+                {
+                    "algorithm_type": "MixtureOfAlgorithms",
+                    "event": "algorithm_iteration_complete",
+                    "algorithm": current_algorithm_name,
+                    "plan": next_plan,
+                    "score": next_score,
+                    "iteration": iteration + 1,
+                }
             )
 
             # Track iteration
@@ -174,6 +246,18 @@ class MixtureOfAlgorithms(BaseAlgorithm):
                 current_plan = next_plan
                 current_score = next_score
                 current_metadata = next_metadata
+                
+                # Notify observers about better plan found
+                self.notify_observers(
+                    {
+                        "algorithm_type": "MixtureOfAlgorithms",
+                        "event": "better_plan_found",
+                        "algorithm": current_algorithm_name,
+                        "plan": current_plan,
+                        "score": current_score,
+                        "improvement": next_score - current_score,
+                    }
+                )
 
         # Prepare metadata
         metadata = {
@@ -183,6 +267,19 @@ class MixtureOfAlgorithms(BaseAlgorithm):
             "iterations": iterations,
             "constraints": constraints,
         }
+        
+        # Notify observers about algorithm completion
+        self.notify_observers(
+            {
+                "algorithm_type": "MixtureOfAlgorithms",
+                "event": "algorithm_complete",
+                "best_plan": current_plan,
+                "best_score": current_score,
+                "algorithm_history": algorithm_history,
+                "final_plan": current_plan,
+                "final_score": current_score,
+            }
+        )
 
         return current_plan, current_score, metadata
 
@@ -284,3 +381,28 @@ class MixtureOfAlgorithms(BaseAlgorithm):
 
         # Default to current algorithm if no new algorithm is found
         return current_algorithm
+        
+    def update(self, plan_data: Dict[str, Any]) -> None:
+        """Receive updates from child algorithms and delegate to observers.
+        
+        This method implements the PlanObserver interface to receive updates
+        from child algorithms. It adds the current algorithm context and
+        forwards the updates to this algorithm's observers.
+        
+        Args:
+            plan_data: Dictionary containing updated plan information
+        """
+        # Get the current running algorithm
+        algorithm_type = plan_data.get("algorithm_type")
+        
+        if algorithm_type:
+            # Add context about the mixture of algorithms and forward to observers
+            delegated_data = {
+                "algorithm_type": "MixtureOfAlgorithms",
+                "event": "delegated_update",
+                "delegated_algorithm": algorithm_type,
+                "algorithm_data": plan_data
+            }
+            
+            # Notify our observers with the delegated data
+            self.notify_observers(delegated_data)
