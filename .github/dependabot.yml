@@ -1,0 +1,28 @@
+version: 2
+updates:
+  # Keep Python dependencies up to date
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "python"
+    # Only allow patch and minor updates
+    # for major updates, a manual review is needed
+    allow:
+      - dependency-type: "direct"
+        update-type: "semver:patch"
+      - dependency-type: "direct"
+        update-type: "semver:minor"
+  
+  # Keep GitHub Actions up to date
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "github-actions"

@@ -3,18 +3,27 @@ name: Python Lint
 on:
   push:
     branches: [ main ]
+    paths:
+      - '**.py'
+      - 'pyproject.toml'
+      - '.github/workflows/python-lint.yml'
   pull_request:
     branches: [ main ]
+    paths:
+      - '**.py'
+      - 'pyproject.toml'
+      - '.github/workflows/python-lint.yml'
+  workflow_dispatch:
 
 jobs:
   lint:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     
     - name: Set up Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: '3.9'
     
@@ -31,8 +40,17 @@ jobs:
     
     - name: Lint with ruff
       run: |
-        # Check for syntax errors and undefined names
-        poetry run ruff check . --select=E9,F63,F7,F82 || echo "Ruff check failed, but continuing..."
+        # Run full ruff linting but don't fail the workflow
+        poetry run ruff check . || echo "Ruff check failed, but continuing..."
+        
+        # Check for critical errors only and report if they exist
+        poetry run ruff check . --select=E9,F63,F7,F82 > critical_errors.txt || true
+        if [ -s critical_errors.txt ]; then
+          echo "::warning::Critical syntax errors or undefined names detected!"
+          cat critical_errors.txt
+        else
+          echo "No critical errors detected ✓"
+        fi
     
     - name: Check formatting with black
       run: |
@@ -41,9 +59,29 @@ jobs:
     - name: Check import order with isort
       run: |
         poetry run isort --check-only --profile black . || echo "Isort check failed, but continuing..."
+    
+    - name: Type checking with mypy
+      run: |
+        poetry run mypy plangen/ || echo "Mypy check failed, but continuing..."
+    
+    - name: Generate lint report
+      run: |
+        echo "# Lint Report" > lint_report.md
+        echo "## Ruff Report" >> lint_report.md
+        poetry run ruff check . --format=github >> lint_report.md || true
+        echo "## Black Report" >> lint_report.md
+        poetry run black --check . >> lint_report.md || true
+        echo "## MyPy Report" >> lint_report.md
+        poetry run mypy plangen/ >> lint_report.md || true
+        
+    - name: Upload lint report
+      uses: actions/upload-artifact@v3
+      with:
+        name: lint-report
+        path: lint_report.md
         
     # Ensure the job passes regardless of lint errors
-    - name: Always succeed
+    - name: Complete linting
       run: |
-        echo "Linting complete. Ensuring CI passes for the PR."
+        echo "Linting complete. Results are available in the artifacts."
         exit 0

@@ -1,0 +1,65 @@
+name: Publish Python Package
+
+on:
+  release:
+    types: [created]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Package version (e.g., 0.1.0)'
+        required: true
+        default: '0.1.0'
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        submodules: 'false'
+    
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+    
+    - name: Install Poetry
+      uses: snok/install-poetry@v1
+      with:
+        version: 1.7.1
+        virtualenvs-create: true
+        virtualenvs-in-project: true
+    
+    - name: Configure Poetry
+      run: |
+        poetry config repositories.github https://github.com/cajias/plangen
+        poetry config http-basic.github ${{ github.actor }} ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Update version if workflow dispatch
+      if: github.event_name == 'workflow_dispatch'
+      run: |
+        poetry version ${{ github.event.inputs.version }}
+        echo "Updated version to ${{ github.event.inputs.version }}"
+    
+    - name: Build package
+      run: |
+        poetry build
+    
+    - name: Publish package to GitHub Packages
+      run: |
+        poetry publish -r github
+    
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v1
+      if: github.event_name == 'workflow_dispatch'
+      with:
+        files: dist/*
+        name: "v${{ github.event.inputs.version }}"
+        tag_name: "v${{ github.event.inputs.version }}"
+        generate_release_notes: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

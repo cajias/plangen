@@ -3,23 +3,39 @@ name: Python Tests
 on:
   push:
     branches: [ main ]
+    paths:
+      - 'plangen/**'
+      - 'tests/**'
+      - 'examples/**'
+      - 'pyproject.toml'
+      - 'poetry.lock'
+      - '.github/workflows/python-tests.yml'
   pull_request:
     branches: [ main ]
+    paths:
+      - 'plangen/**'
+      - 'tests/**'
+      - 'examples/**'
+      - 'pyproject.toml'
+      - 'poetry.lock'
+      - '.github/workflows/python-tests.yml'
+  workflow_dispatch:
 
 jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.9, '3.10']
+        python-version: [3.9, '3.10', '3.11']
+      fail-fast: false
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       with:
         submodules: 'false'
     
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
     
@@ -42,10 +58,35 @@ jobs:
     
     - name: Run tests
       run: |
-        poetry run pytest tests/ --cov=plangen --cov-report=xml || echo "Tests failed but continuing build"
+        poetry run pytest tests/ --cov=plangen --cov-report=xml --cov-report=term || echo "Tests failed but continuing build"
+    
+    - name: Check examples (syntax only)
+      run: |
+        echo "Checking examples for syntax errors..."
+        for example_file in examples/*.py; do
+          echo "Checking $example_file"
+          poetry run python -m py_compile $example_file || echo "Example $example_file has syntax errors"
+        done
     
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v1
+      uses: codecov/codecov-action@v3
       with:
         file: ./coverage.xml
         fail_ci_if_error: false
+    
+    - name: Calculate coverage percentage
+      if: github.ref == 'refs/heads/main'
+      run: |
+        python .github/workflows/scripts/coverage_badge.py coverage.xml
+    
+    - name: Generate coverage badge
+      uses: schneegans/dynamic-badges-action@v1.6.0
+      if: github.ref == 'refs/heads/main'
+      with:
+        auth: ${{ secrets.GIST_SECRET }}
+        gistID: ${{ secrets.COVERAGE_GIST_ID || '0000000000000000000000000000000000000000' }}
+        filename: plangen-coverage.json
+        label: coverage
+        message: ${{ env.COVERAGE }}%
+        color: ${{ env.COVERAGE_COLOR }}
+        namedLogo: python

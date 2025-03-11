@@ -1,5 +1,11 @@
 # PlanGEN
 
+[![Tests](https://github.com/cajias/plangen/actions/workflows/python-tests.yml/badge.svg)](https://github.com/cajias/plangen/actions/workflows/python-tests.yml)
+[![Lint](https://github.com/cajias/plangen/actions/workflows/python-lint.yml/badge.svg)](https://github.com/cajias/plangen/actions/workflows/python-lint.yml)
+[![Docs](https://github.com/cajias/plangen/actions/workflows/docs-validation.yml/badge.svg)](https://github.com/cajias/plangen/actions/workflows/docs-validation.yml)
+[![Python Versions](https://img.shields.io/badge/python-3.9%20%7C%203.10%20%7C%203.11%20%7C%203.12-blue)](https://www.python.org/)
+[![License](https://img.shields.io/github/license/cajias/plangen)](https://github.com/cajias/plangen/blob/main/LICENSE)
+
 PlanGEN is a framework for solving complex problems using a multi-agent approach with large language models (LLMs). It implements the PlanGEN workflow described in the paper "PlanGEN: Generative Planning with Large Language Models".
 
 ## Features
@@ -25,37 +31,52 @@ For comprehensive documentation, please see the [docs](docs/index.md) directory:
 
 ## Installation
 
-### Using Poetry (recommended)
+### Installing from GitHub Packages (recommended)
 
-This project uses [Poetry](https://python-poetry.org/) for dependency management. To install with Poetry:
-
-```bash
-# Clone the repository
-git clone https://github.com/yourusername/plangen.git
-cd plangen
-
-# Install dependencies with Poetry
-# If you don't have Poetry installed, see https://python-poetry.org/docs/#installation
-poetry install
-
-# Activate the virtual environment
-poetry shell
-```
-
-### Using pip
-
-Alternatively, you can install using pip:
+PlanGEN is available as a package from GitHub Packages. You can install it directly using pip:
 
 ```bash
-# Clone the repository
-git clone https://github.com/yourusername/plangen.git
-cd plangen
+# Authenticate with GitHub Packages
+pip install --upgrade pip
+pip install keyring
+pip install keyrings.alt
 
-# Create a virtual environment
-python -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+# Set up your credentials (run once)
+# Replace USERNAME with your GitHub username and TOKEN with a GitHub personal access token
+keyring set https://github.com/cajias/plangen USERNAME TOKEN
 
 # Install the package
+pip install plangen --index-url https://github.com/cajias/plangen
+```
+
+### Installing with Poetry
+
+Alternatively, you can add PlanGEN to your Poetry project:
+
+```bash
+# Configure Poetry to use GitHub Packages
+poetry config repositories.plangen https://github.com/cajias/plangen
+
+# Add the package to your project
+poetry add plangen --source plangen
+```
+
+### Development Installation
+
+For development or contributing to the project, you can install from the source:
+
+```bash
+# Clone the repository
+git clone https://github.com/cajias/plangen.git
+cd plangen
+
+# Using Poetry (recommended)
+poetry install
+poetry shell
+
+# OR using pip
+python -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 pip install -e .
 ```
 
