@@ -57,6 +57,8 @@ class GraphRenderer(PlanObserver):
             self._update_rebase_graph(plan_data)
         elif self.algorithm_type == "BestOfN":
             self._update_best_of_n_graph(plan_data)
+        elif self.algorithm_type == "MixtureOfAlgorithms":
+            self._update_mixture_of_algorithms_graph(plan_data)
         else:
             # Generic graph update for unknown algorithm types
             self._update_generic_graph(plan_data)
@@ -113,11 +115,31 @@ class GraphRenderer(PlanObserver):
                 score=plan_data.get("score", 0),
                 feedback=plan_data.get("feedback", ""),
                 timestamp=time.time(),
+                iteration=iteration,
+                type="rebase_step",
+                label=f"Iteration {iteration}",
             )
 
             # Add edge from previous iteration if it exists
             if prev_node_id and prev_node_id in self.graph:
-                self.graph.add_edge(prev_node_id, node_id)
+                self.graph.add_edge(
+                    prev_node_id, 
+                    node_id, 
+                    label="refinement",
+                    improvement=plan_data.get("score", 0) - self.graph.nodes[prev_node_id].get("score", 0)
+                )
+            
+            # Add an initial node if this is the first iteration
+            if iteration == 0:
+                root_id = "rebase_root"
+                if root_id not in self.graph:
+                    self.graph.add_node(
+                        root_id,
+                        label="Problem Statement",
+                        type="root",
+                        timestamp=time.time(),
+                    )
+                self.graph.add_edge(root_id, node_id)
 
     def _update_best_of_n_graph(self, plan_data: Dict[str, Any]) -> None:
         """
@@ -129,21 +151,152 @@ class GraphRenderer(PlanObserver):
         if "plan_id" in plan_data:
             plan_id = plan_data["plan_id"]
             node_id = f"plan_{plan_id}"
-
+            
+            # Calculate a normalized score for color intensity
+            score = plan_data.get("score", 0)
+            is_selected = plan_data.get("is_selected", False)
+            
             # Add node with attributes
             self.graph.add_node(
                 node_id,
                 plan=plan_data.get("plan", ""),
-                score=plan_data.get("score", 0),
+                score=score,
                 timestamp=time.time(),
+                type="plan",
+                label=f"Plan {plan_id}" + (" (Selected)" if is_selected else ""),
+                is_selected=is_selected,
+                plan_id=plan_id,
+                verification=plan_data.get("verification", "")
             )
 
             # Connect to central node
             central_id = "best_of_n_root"
             if central_id not in self.graph:
-                self.graph.add_node(central_id, label="Root")
+                self.graph.add_node(
+                    central_id, 
+                    label="Problem Statement",
+                    type="root",
+                    timestamp=time.time(),
+                )
 
-            self.graph.add_edge(central_id, node_id)
+            # Add edge with score information
+            self.graph.add_edge(
+                central_id, 
+                node_id, 
+                weight=score,
+                label=f"Score: {score:.2f}"
+            )
+            
+        # Update for selecting the best plan
+        elif "best_plan_id" in plan_data:
+            best_plan_id = plan_data["best_plan_id"]
+            best_node_id = f"plan_{best_plan_id}"
+            
+            # Mark the best plan
+            if best_node_id in self.graph:
+                self.graph.nodes[best_node_id]["is_selected"] = True
+                self.graph.nodes[best_node_id]["label"] = f"Plan {best_plan_id} (Selected)"
+                
+                # Add a special selected node
+                selected_id = "selected_plan"
+                self.graph.add_node(
+                    selected_id,
+                    label="Best Solution",
+                    type="selected",
+                    timestamp=time.time(),
+                )
+                
+                # Connect the selected node to the best plan
+                self.graph.add_edge(
+                    best_node_id, 
+                    selected_id, 
+                    weight=1.0,
+                    label="Selected"
+                )
+
+    def _update_mixture_of_algorithms_graph(self, plan_data: Dict[str, Any]) -> None:
+        """
+        Update graph for MixtureOfAlgorithms.
+
+        Args:
+            plan_data: Dictionary containing MixtureOfAlgorithms update data
+        """
+        # Handle algorithm selection
+        if "selected_algorithm" in plan_data:
+            selected_algo = plan_data["selected_algorithm"]
+            node_id = f"algo_{selected_algo}_{self.update_count}"
+            
+            # Add node for the selected algorithm
+            self.graph.add_node(
+                node_id,
+                algorithm=selected_algo,
+                timestamp=time.time(),
+                type="algorithm",
+                label=f"Selected: {selected_algo}",
+                reason=plan_data.get("selection_reason", ""),
+                score=plan_data.get("score", 0),
+            )
+            
+            # Connect to root or previous algorithm
+            prev_node = None
+            for node, attrs in self.graph.nodes(data=True):
+                if attrs.get("type") == "algorithm" and node != node_id:
+                    prev_node = node
+                    break
+            
+            # Add root if needed
+            if not prev_node and "root" not in self.graph:
+                self.graph.add_node(
+                    "root",
+                    label="Problem Statement",
+                    type="root",
+                    timestamp=time.time(),
+                )
+                self.graph.add_edge("root", node_id)
+            elif prev_node:
+                self.graph.add_edge(prev_node, node_id)
+            else:
+                self.graph.add_edge("root", node_id)
+                
+        # Handle algorithm-specific updates by delegating to respective handlers
+        elif "delegated_algorithm" in plan_data and "algorithm_data" in plan_data:
+            algo_type = plan_data["delegated_algorithm"]
+            algo_data = plan_data["algorithm_data"]
+            
+            # Add algorithm type to the data for proper delegation
+            if "algorithm_type" not in algo_data:
+                algo_data["algorithm_type"] = algo_type
+                
+            # Delegate to the appropriate update method
+            if algo_type == "TreeOfThought":
+                self._update_tree_of_thought_graph(algo_data)
+            elif algo_type == "REBASE":
+                self._update_rebase_graph(algo_data)
+            elif algo_type == "BestOfN":
+                self._update_best_of_n_graph(algo_data)
+        
+        # Handle final selection
+        elif "final_plan" in plan_data:
+            final_node_id = "final_solution"
+            
+            # Add node for the final solution
+            self.graph.add_node(
+                final_node_id,
+                plan=plan_data.get("final_plan", ""),
+                score=plan_data.get("final_score", 0),
+                timestamp=time.time(),
+                type="final",
+                label="Final Solution",
+            )
+            
+            # Connect to the last algorithm node
+            last_algo_node = None
+            for node, attrs in self.graph.nodes(data=True):
+                if attrs.get("type") == "algorithm":
+                    last_algo_node = node
+            
+            if last_algo_node:
+                self.graph.add_edge(last_algo_node, final_node_id)
 
     def _update_generic_graph(self, plan_data: Dict[str, Any]) -> None:
         """
