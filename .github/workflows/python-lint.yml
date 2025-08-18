@@ -75,7 +75,7 @@ jobs:
         poetry run mypy plangen/ >> lint_report.md || true
         
     - name: Upload lint report
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: lint-report
         path: lint_report.md
