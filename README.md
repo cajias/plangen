@@ -63,7 +63,12 @@ For development or contributing to the project, you can install from the source:
 git clone https://github.com/cajias/plangen.git
 cd plangen
 
-# Using Poetry (recommended)
+# Bootstrap the development environment (creates .venv and installs dependencies)
+python workspace_setup.py
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+
+# Alternatively, manage dependencies manually with Poetry or pip
+# Using Poetry
 poetry install
 poetry shell
 
