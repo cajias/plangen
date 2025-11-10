@@ -49,6 +49,7 @@ isort = "^5.12.0"
 mypy = "^1.5.0"
 pytest-cov = "^4.1.0"
 ruff = "^0.1.5"
+pip-audit = "^2.9.0"
 
 [build-system]
 requires = ["poetry-core"]
@@ -65,5 +66,7 @@ line_length = 88
 [tool.ruff]
 target-version = "py39"
 line-length = 88
+
+[tool.ruff.lint]
 select = ["E", "F", "I", "W"]
 ignore = []

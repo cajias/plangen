@@ -1,21 +1,14 @@
 """
 Agent implementations for PlanGEN
 
-Note: This package contains the modern agent implementations,
-while the agents.py file in the parent directory contains the original
-agent implementations used by plangen.py.
-
-In the future, these implementations will be unified.
+This package contains the agent implementations for the PlanGEN framework.
 """
 
-# Import for API consistency
-from ..agents import (
-    ConstraintAgent,
-    SelectionAgent,
-    SolutionAgent,
-    VerificationAgent,
-    Solution
-)
+# Import from local modules
+from .constraint_agent import ConstraintAgent
+from .solution_agent import SolutionAgent
+from .verification_agent import VerificationAgent
+from .selection_agent import SelectionAgent, Solution
 
 __all__ = [
     "ConstraintAgent",
