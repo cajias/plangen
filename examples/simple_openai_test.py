@@ -1,5 +1,7 @@
 """
-Simple intent test for PlanGEN using OpenAI model
+Simple example using PlanGEN with OpenAI model (using modern public API).
+
+This example demonstrates the recommended way to use PlanGEN with the new public API.
 """
 
 import json
@@ -7,16 +9,14 @@ import os
 
 from dotenv import load_dotenv
 
-from plangen import PlanGEN
-from plangen.models import OpenAIModelInterface
-from plangen.prompts import PromptManager
+from plangen import PlanGen
 
 # Load environment variables from .env file
 load_dotenv()
 
 
 def main():
-    """Run a simple intent test with the calendar scheduling problem."""
+    """Run a simple example with the calendar scheduling problem."""
 
     # Calendar scheduling problem from the paper
     calendar_problem = """
@@ -27,22 +27,11 @@ def main():
     Find an earliest time slot that works for all participants.
     """
 
-    # Initialize OpenAI model with gpt-3.5-turbo
-    model = OpenAIModelInterface(
-        model_name="gpt-3.5-turbo",
+    # Initialize PlanGen with OpenAI using modern public API
+    # Can also use PlanGen.create() to auto-detect, or PlanGen.with_bedrock() for AWS
+    plangen = PlanGen.with_openai(
+        model_name="gpt-4o",
         temperature=0.7,
-        max_tokens=1024,
-        api_key="sk-fake-key-for-testing",  # This will be overridden by OPENAI_API_KEY env var
-    )
-
-    # Initialize prompt manager
-    prompt_manager = PromptManager()
-
-    # Initialize PlanGEN
-    plangen = PlanGEN(
-        model=model,
-        prompt_manager=prompt_manager,
-        num_solutions=3,
     )
 
     print(f"Problem: {calendar_problem}")

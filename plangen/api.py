@@ -6,7 +6,7 @@ framework. It is designed to be intuitive and easy to use, hiding the complexity
 of the underlying implementation.
 """
 
-from typing import Any, Dict, List, Optional, Protocol, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Protocol, Tuple, Union
 
 # Type definitions for better code readability
 PlanType = str
@@ -118,7 +118,7 @@ class PlanGen:
         Returns:
             Configured PlanGen instance
         """
-        from .models import LLMInterface
+        from .utils import LLMInterface
         from .plangen import PlanGEN
         from .prompts import PromptManager
 
@@ -587,7 +587,7 @@ class Verifiers:
         return MathVerifier(**kwargs)
 
     @classmethod
-    def custom(cls, verify_function: callable, **kwargs) -> VerifierProtocol:
+    def custom(cls, verify_function: Callable, **kwargs) -> VerifierProtocol:
         """Create a custom verifier with a function.
 
         Args:

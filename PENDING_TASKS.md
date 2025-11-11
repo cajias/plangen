@@ -288,3 +288,161 @@ The PlanGEN project is in active development with recent focus on bug fixes and 
 **Stability:** Recent fixes indicate active maintenance and refinement
 **Testing:** Infrastructure exists but needs dependency stabilization
 
+---
+
+## Priority 8: API Enhancement for Orchestration Framework Integration (NEW)
+
+### 8.1 Async Support Implementation
+**Priority:** CRITICAL for modern orchestrations
+**Status:** PLANNED
+**Details:** Add async variants of public methods to support async orchestrators (LangChain, CrewAI, FastAPI)
+
+**Tasks:**
+- [ ] Add `async def solve_async()` method to `PlanGen` class
+- [ ] Add `async def solve_async()` to `Algorithm` factory
+- [ ] Update `ModelProtocol` to support async generation
+- [ ] Add concurrent execution support for solution generation
+- [ ] Add tests for async functionality
+
+**Files to Modify:**
+- `plangen/api.py` - Add async methods
+- `plangen/models/base_model.py` - Add async protocol
+- `plangen/algorithms/base_algorithm.py` - Add async support
+- `tests/test_api_async.py` - New test file
+
+**Estimated Effort:** 3-5 days
+
+### 8.2 Callback/Observer System
+**Priority:** HIGH for monitoring and custom logic
+**Status:** PLANNED
+**Details:** Add callback hooks to track workflow execution and inject custom logic
+
+**Tasks:**
+- [ ] Implement callback registry in `PlanGen` class
+- [ ] Add `on_constraint_extracted()` callback
+- [ ] Add `on_solution_generated()` callback
+- [ ] Add `on_verification_complete()` callback
+- [ ] Add `on_solution_selected()` callback
+- [ ] Add tests for callback system
+- [ ] Update documentation with callback examples
+
+**Files to Modify:**
+- `plangen/api.py` - Add callback registry
+- `plangen/plangen.py` - Trigger callbacks in workflow
+- `tests/test_callbacks.py` - New test file
+- `docs/user_guide/callbacks.md` - New documentation
+
+**Estimated Effort:** 2-3 days
+
+### 8.3 Type Safety Improvements
+**Priority:** HIGH for IDE support and documentation
+**Status:** PLANNED
+**Details:** Replace generic `Dict[str, Any]` with proper TypedDict structures
+
+**Tasks:**
+- [ ] Create `TypedDict` for `SolveResult`
+- [ ] Create `TypedDict` for verification results
+- [ ] Update all methods to return typed structures
+- [ ] Add type stubs (.pyi files) if needed
+- [ ] Update tests to use new types
+
+**Files to Modify:**
+- `plangen/api.py` - Add TypedDict definitions
+- `plangen/models/base_model.py` - Update return types
+- `plangen/algorithms/base_algorithm.py` - Update return types
+- All integration tests
+
+**Estimated Effort:** 2-3 days
+
+### 8.4 Configuration Object Pattern
+**Priority:** MEDIUM for flexibility and DI
+**Status:** PLANNED
+**Details:** Add `PlanGenConfig` dataclass for cleaner configuration management
+
+**Tasks:**
+- [ ] Create `PlanGenConfig` dataclass
+- [ ] Add `from_config()` class method to `PlanGen`
+- [ ] Add validation for config parameters
+- [ ] Support environment variable overrides
+- [ ] Add tests for configuration loading
+- [ ] Document configuration patterns
+
+**Files to Modify:**
+- `plangen/api.py` - Add config class and loader
+- `tests/test_config.py` - New test file
+- `docs/user_guide/configuration.md` - Update documentation
+
+**Estimated Effort:** 2-3 days
+
+### 8.5 Workflow Customization/Exposure
+**Priority:** MEDIUM for advanced users
+**Status:** PLANNED
+**Details:** Expose LangGraph workflow for inspection and customization
+
+**Tasks:**
+- [ ] Add `get_workflow_graph()` method
+- [ ] Add `get_agents()` method to expose agent instances
+- [ ] Document workflow structure
+- [ ] Provide examples of workflow customization
+- [ ] Add tests for workflow access
+
+**Files to Modify:**
+- `plangen/api.py` - Add accessor methods
+- `tests/test_workflow_access.py` - New test file
+- `docs/advanced_usage.md` - New documentation
+- `examples/custom_workflow_example.py` - New example
+
+**Estimated Effort:** 2-3 days
+
+### 8.6 Streaming Support
+**Priority:** MEDIUM for real-time applications
+**Status:** PLANNED
+**Details:** Add streaming API for real-time result generation and UI updates
+
+**Tasks:**
+- [ ] Implement `solve_stream()` method
+- [ ] Add solution generator streaming
+- [ ] Add constraint extraction streaming
+- [ ] Add verification result streaming
+- [ ] Create tests for streaming
+- [ ] Document streaming patterns
+- [ ] Add streaming examples
+
+**Files to Modify:**
+- `plangen/api.py` - Add streaming methods
+- `plangen/plangen.py` - Add stream support to workflow
+- `tests/test_streaming.py` - New test file
+- `examples/streaming_example.py` - New example
+- `docs/streaming.md` - New documentation
+
+**Estimated Effort:** 4-5 days
+
+### 8.7 Verifier Composition
+**Priority:** LOW-MEDIUM for advanced verification
+**Status:** PLANNED
+**Details:** Support combining multiple verifiers with different strategies
+
+**Tasks:**
+- [ ] Add `combine()` method to `Verifiers` class
+- [ ] Implement `average` combining strategy
+- [ ] Implement `weighted` combining strategy
+- [ ] Implement `first_fail` combining strategy
+- [ ] Create tests for verifier composition
+- [ ] Document composition patterns
+- [ ] Add composition examples
+
+**Files to Modify:**
+- `plangen/api.py` - Add combine method
+- `plangen/verification/base_verifier.py` - Add composition support
+- `tests/test_verifier_composition.py` - New test file
+- `examples/verifier_composition_example.py` - New example
+- `docs/user_guide/verification.md` - Update with composition
+
+**Estimated Effort:** 2-3 days
+
+### Summary of API Enhancement Effort
+- **Phase 1 (Critical):** 8-11 days (Async + Callbacks + Types)
+- **Phase 2 (Important):** 6-9 days (Config + Workflow + Streaming)
+- **Phase 3 (Nice):** 2-3 days (Verifier composition)
+- **Total Estimated:** 16-23 days (3-4 weeks)
+
