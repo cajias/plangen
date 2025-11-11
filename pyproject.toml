@@ -59,47 +59,26 @@ build-backend = "poetry.core.masonry.api"
 
 # ==============================================================================
 # Linting and Code Quality Configuration
-# Source: https://github.com/cajias/lint-configs (installed as agentic-guardrails v1.0.0)
-# Package: lint_configs.get_python_config_path() -> pyproject-linters.toml
+# Base configs from: agentic-guardrails package (lint_configs v1.0.0)
+# Source: https://github.com/cajias/lint-configs
 #
-# The agentic-guardrails package is installed as a dev dependency and provides
-# canonical linting configurations. Due to tool limitations with extend directives,
-# the configurations are maintained in this file (.ruff.toml for Ruff, and below
-# for other tools), based on the package defaults with project-specific overrides.
+# The agentic-guardrails package provides canonical linting configurations.
+# Due to tool limitations (most linters don't support extending from installed
+# packages), we use the package config path directly in tool invocations:
 #
-# To update: poetry update agentic-guardrails, then review lint_configs package
+# Usage:
+#   CONFIG=$(poetry run python -c "from lint_configs import get_python_config_path; print(get_python_config_path())")
+#   poetry run ruff check --config $CONFIG
+#   poetry run mypy --config-file $CONFIG
+#   poetry run pylint --rcfile $CONFIG
+#   poetry run black --config $CONFIG
+#   poetry run pytest -c $CONFIG
+#
+# Or add to pyproject.toml as needed for tools that require it.
+# Project-specific overrides are defined below.
 # ==============================================================================
 
-# Black configuration (from lint_configs package v1.0.0)
-[tool.black]
-line-length = 120
-target-version = ["py39"]
-
-# isort configuration (from lint_configs package v1.0.0)
-[tool.isort]
-profile = "black"
-line_length = 120
-force_single_line = false
-lines_after_imports = 2
-
-# MyPy configuration (from lint_configs package v1.0.0)
-[tool.mypy]
-python_version = "3.9"
-warn_return_any = true
-warn_unused_configs = true
-disallow_untyped_defs = true
-check_untyped_defs = true
-disallow_incomplete_defs = true
-no_implicit_optional = true
-warn_redundant_casts = true
-warn_unused_ignores = true
-strict_equality = true
-strict = true  # Enable all strict checks
-show_error_codes = true
-show_column_numbers = true
-pretty = true
-
-# Project-specific third-party library overrides
+# Project-specific MyPy overrides for third-party libraries
 [[tool.mypy.overrides]]
 module = [
     "langgraph.*",
@@ -108,80 +87,6 @@ module = [
 ]
 ignore_missing_imports = true
 
-# Pylint configuration (from lint_configs package v1.0.0)
-[tool.pylint.main]
-enable = ["all"]  # Enable all checks including duplicate code detection
-min-similarity-lines = 4  # Minimum lines that constitute a code clone
-ignore-imports = true  # Ignore imports when checking for similarities
-load-plugins = []  # Load all available plugins
-
-[tool.pylint.messages_control]
-disable = [
-    "C0114",  # missing-module-docstring (covered by pydocstyle)
-    "C0115",  # missing-class-docstring (covered by pydocstyle)
-    "C0116",  # missing-function-docstring (covered by pydocstyle)
-    "R0903",  # too-few-public-methods (too opinionated)
-    "W0212",  # protected-access (sometimes necessary)
-]
-
-[tool.pylint.format]
-max-line-length = 120  # Match Black
-
-[tool.pylint.similarities]
-min-similarity-lines = 4  # Minimum lines that constitute duplicate code
-ignore-comments = true  # Ignore comments when checking for duplicate code
-ignore-docstrings = true  # Ignore docstrings when checking for duplicate code
-ignore-imports = true  # Ignore imports when checking for duplicate code
-
-[tool.pylint.basic]
-good-names = ["i", "j", "k", "ex", "Run", "_", "id"]
-const-rgx = "^([A-Z_][A-Z0-9_]*|__.*__|log)$"
-
-[tool.pylint.design]
-max-args = 5  # Maximum number of arguments for function / method
-max-locals = 15  # Maximum number of locals for function / method body
-max-returns = 6  # Maximum number of return / yield for function / method body
-max-branches = 12  # Maximum number of branch for function / method body
-max-statements = 50  # Maximum number of statements in function / method body
-max-parents = 7  # Maximum number of parents for a class
-max-attributes = 7  # Maximum number of attributes for a class
-min-public-methods = 1  # Minimum number of public methods for a class
-max-public-methods = 20  # Maximum number of public methods for a class
-
-# Pytest configuration (from lint_configs package v1.0.0)
-[tool.pytest.ini_options]
-addopts = "--cov --cov-report=term-missing --cov-report=html --cov-report=xml"
-testpaths = ["tests"]
-asyncio_mode = "auto"
-asyncio_default_fixture_loop_scope = "function"
-filterwarnings = ["error"]  # Fail on warnings
-
-# Coverage configuration (from lint_configs package v1.0.0)
+# Project-specific Coverage source configuration
 [tool.coverage.run]
-branch = true
-source = ["plangen"]  # Project-specific: package name(s)
-parallel = true
-omit = [
-    "*/tests/*",
-    "*/test_*.py",
-    "*/__pycache__/*",
-    "*/site-packages/*",
-    "*/venv/*",
-    "*/.venv/*",
-]
-
-[tool.coverage.report]
-precision = 2
-show_missing = true
-skip_covered = false
-exclude_lines = [
-    "pragma: no cover",
-    "def __repr__",
-    "raise AssertionError",
-    "raise NotImplementedError",
-    "if __name__ == .__main__.:",
-    "if TYPE_CHECKING:",
-    "@abstractmethod",
-    "@abc.abstractmethod",
-]
-fail_under = 80  # Require 80% coverage
+source = ["plangen"]
