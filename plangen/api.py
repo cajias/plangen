@@ -600,9 +600,31 @@ class Verifiers:
         from .verification import BaseVerifier
 
         class CustomVerifier(BaseVerifier):
+            def verify_solution(
+                self, problem_statement: str, solution: str, constraints: List[str]
+            ) -> Dict[str, Any]:
+                # Call the user's verify function and adapt to the expected interface
+                feedback, score = verify_function(problem_statement, constraints, solution)
+                return {
+                    "is_valid": score > 0.5,
+                    "score": score * 100,
+                    "reason": feedback
+                }
+
+            def is_applicable(self, problem_statement: str) -> bool:
+                # Custom verifiers are always applicable
+                return True
+
+            def extract_domain_constraints(
+                self, problem_statement: str, general_constraints: List[str]
+            ) -> List[str]:
+                # Custom verifiers don't extract additional constraints
+                return []
+
             def verify(
                 self, problem: str, constraints: List[str], plan: str
             ) -> Tuple[str, float]:
+                # Support the VerifierProtocol interface
                 return verify_function(problem, constraints, plan)
 
         return CustomVerifier(**kwargs)

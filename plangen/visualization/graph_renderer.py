@@ -396,7 +396,11 @@ class GraphRenderer(PlanObserver):
 
             elif self.algorithm_type == "REBASE":
                 score = node_data.get("score", 0)
-                iteration = int(node.split("_")[1]) if "_" in node else 0
+                # Try to extract iteration number, handle non-numeric cases like "iter_root"
+                try:
+                    iteration = int(node.split("_")[1]) if "_" in node else 0
+                except (ValueError, IndexError):
+                    iteration = 0
                 feedback = (
                     node_data.get("feedback", "")[:20] + "..."
                     if "feedback" in node_data

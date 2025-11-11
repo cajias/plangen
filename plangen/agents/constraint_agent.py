@@ -44,16 +44,3 @@ class ConstraintAgent:
         constraints = self.model.generate(prompt, system_message=system_message)
 
         return constraints
-
-    def extract_constraints(self, problem_statement: str) -> List[str]:
-        """Extract constraints from a problem statement.
-
-        This method provides a public API that delegates to the run() method.
-
-        Args:
-            problem_statement: Problem statement
-
-        Returns:
-            List of extracted constraints
-        """
-        return self.run(problem_statement)
