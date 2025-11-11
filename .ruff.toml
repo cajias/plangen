@@ -1,7 +1,10 @@
-# Canonical Ruff Configuration  
-# Source: https://github.com/cajias/lint-configs/releases/tag/v1.0.0
-# Based on: python/pyproject-linters.toml from v1.0.0 release
-# This file is copied from the release (not auto-synced)
+# Canonical Ruff Configuration
+# Source: lint_configs package (installed as agentic-guardrails v1.0.0)
+# Package: lint_configs.get_python_config_path() -> pyproject-linters.toml
+# GitHub: https://github.com/cajias/lint-configs/releases/tag/v1.0.0
+#
+# This configuration is based on the lint_configs package defaults.
+# To update: poetry update agentic-guardrails, then review changes in package.
 
 line-length = 120
 target-version = "py39"

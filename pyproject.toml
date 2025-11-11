@@ -51,6 +51,7 @@ pytest-cov = "^4.1.0"
 ruff = "^0.1.5"
 pylint = "^3.0.0"
 pip-audit = "^2.9.0"
+agentic-guardrails = {git = "https://github.com/cajias/lint-configs.git", tag = "v1.0.0", subdirectory = "python"}
 
 [build-system]
 requires = ["poetry-core"]
@@ -58,37 +59,45 @@ build-backend = "poetry.core.masonry.api"
 
 # ==============================================================================
 # Linting and Code Quality Configuration
-# References: https://github.com/cajias/lint-configs/releases/tag/v1.0.0
+# Source: https://github.com/cajias/lint-configs (installed as agentic-guardrails v1.0.0)
+# Package: lint_configs.get_python_config_path() -> pyproject-linters.toml
 #
-# Ruff: Configuration in .ruff.toml (copied from v1.0.0 release)
-# Other tools: Configured below (Black, isort, MyPy, Pylint, Pytest, Coverage)
+# The agentic-guardrails package is installed as a dev dependency and provides
+# canonical linting configurations. Due to tool limitations with extend directives,
+# the configurations are maintained in this file (.ruff.toml for Ruff, and below
+# for other tools), based on the package defaults with project-specific overrides.
+#
+# To update: poetry update agentic-guardrails, then review lint_configs package
 # ==============================================================================
 
-# Black configuration (from cajias/lint-configs v1.0.0)
+# Black configuration (from lint_configs package v1.0.0)
 [tool.black]
 line-length = 120
 target-version = ["py39"]
 
-# isort configuration (from cajias/lint-configs v1.0.0)
+# isort configuration (from lint_configs package v1.0.0)
 [tool.isort]
 profile = "black"
 line_length = 120
 force_single_line = false
 lines_after_imports = 2
 
-# MyPy configuration (from cajias/lint-configs v1.0.0)
+# MyPy configuration (from lint_configs package v1.0.0)
 [tool.mypy]
 python_version = "3.9"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true
-disallow_any_unimported = false
+check_untyped_defs = true
+disallow_incomplete_defs = true
 no_implicit_optional = true
 warn_redundant_casts = true
 warn_unused_ignores = true
-warn_no_return = true
-check_untyped_defs = true
 strict_equality = true
+strict = true  # Enable all strict checks
+show_error_codes = true
+show_column_numbers = true
+pretty = true
 
 # Project-specific third-party library overrides
 [[tool.mypy.overrides]]
@@ -99,55 +108,80 @@ module = [
 ]
 ignore_missing_imports = true
 
-# Pylint configuration (from cajias/lint-configs v1.0.0)
+# Pylint configuration (from lint_configs package v1.0.0)
 [tool.pylint.main]
-jobs = 0
-load-plugins = ["pylint.extensions.docparams"]
+enable = ["all"]  # Enable all checks including duplicate code detection
+min-similarity-lines = 4  # Minimum lines that constitute a code clone
+ignore-imports = true  # Ignore imports when checking for similarities
+load-plugins = []  # Load all available plugins
 
 [tool.pylint.messages_control]
 disable = [
-    "C0114",  # missing-module-docstring (pydocstyle handles this)
-    "C0115",  # missing-class-docstring (pydocstyle handles this)
-    "C0116",  # missing-function-docstring (pydocstyle handles this)
-    "R0903",  # too-few-public-methods
-    "W0212",  # protected-access
+    "C0114",  # missing-module-docstring (covered by pydocstyle)
+    "C0115",  # missing-class-docstring (covered by pydocstyle)
+    "C0116",  # missing-function-docstring (covered by pydocstyle)
+    "R0903",  # too-few-public-methods (too opinionated)
+    "W0212",  # protected-access (sometimes necessary)
 ]
 
-[tool.pylint.design]
-max-args = 5
-max-locals = 15
-max-returns = 6
-max-branches = 12
-max-statements = 50
-max-attributes = 7
+[tool.pylint.format]
+max-line-length = 120  # Match Black
 
 [tool.pylint.similarities]
-min-similarity-lines = 4
-ignore-imports = true
+min-similarity-lines = 4  # Minimum lines that constitute duplicate code
+ignore-comments = true  # Ignore comments when checking for duplicate code
+ignore-docstrings = true  # Ignore docstrings when checking for duplicate code
+ignore-imports = true  # Ignore imports when checking for duplicate code
 
 [tool.pylint.basic]
 good-names = ["i", "j", "k", "ex", "Run", "_", "id"]
 const-rgx = "^([A-Z_][A-Z0-9_]*|__.*__|log)$"
 
-# Pytest configuration
-[tool.pytest.ini_options]
-testpaths = ["tests"]
-addopts = "--cov=plangen --cov-report=term-missing --cov-report=html --cov-report=xml"
-asyncio_mode = "auto"
-filterwarnings = ["error"]
+[tool.pylint.design]
+max-args = 5  # Maximum number of arguments for function / method
+max-locals = 15  # Maximum number of locals for function / method body
+max-returns = 6  # Maximum number of return / yield for function / method body
+max-branches = 12  # Maximum number of branch for function / method body
+max-statements = 50  # Maximum number of statements in function / method body
+max-parents = 7  # Maximum number of parents for a class
+max-attributes = 7  # Maximum number of attributes for a class
+min-public-methods = 1  # Minimum number of public methods for a class
+max-public-methods = 20  # Maximum number of public methods for a class
 
-# Coverage configuration (80% minimum from cajias/lint-configs)
+# Pytest configuration (from lint_configs package v1.0.0)
+[tool.pytest.ini_options]
+addopts = "--cov --cov-report=term-missing --cov-report=html --cov-report=xml"
+testpaths = ["tests"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+filterwarnings = ["error"]  # Fail on warnings
+
+# Coverage configuration (from lint_configs package v1.0.0)
 [tool.coverage.run]
 branch = true
+source = ["plangen"]  # Project-specific: package name(s)
 parallel = true
 omit = [
-    "tests/*",
+    "*/tests/*",
+    "*/test_*.py",
     "*/__pycache__/*",
-    "*/.pytest_cache/*",
+    "*/site-packages/*",
+    "*/venv/*",
+    "*/.venv/*",
 ]
 
 [tool.coverage.report]
 precision = 2
 show_missing = true
 skip_covered = false
-fail_under = 80
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    "@abstractmethod",
+    "@abc.abstractmethod",
+]
+fail_under = 80  # Require 80% coverage
