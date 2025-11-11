@@ -51,7 +51,7 @@ pytest-cov = "^4.1.0"
 ruff = "^0.1.5"
 pylint = "^3.0.0"
 pip-audit = "^2.9.0"
-agentic-guardrails = {git = "https://github.com/cajias/lint-configs.git", tag = "v1.0.0", subdirectory = "python"}
+agentic-guardrails = {git = "https://github.com/cajias/agentic-guardrails.git", tag = "v1.0.1", subdirectory = "python"}
 
 [build-system]
 requires = ["poetry-core"]
@@ -59,24 +59,23 @@ build-backend = "poetry.core.masonry.api"
 
 # ==============================================================================
 # Linting and Code Quality Configuration
-# Base configs from: agentic-guardrails package (lint_configs v1.0.0)
-# Source: https://github.com/cajias/lint-configs
+# Base configs from: agentic-guardrails package (v1.0.1)
+# Source: https://github.com/cajias/agentic-guardrails
 #
 # The agentic-guardrails package provides canonical linting configurations.
-# Due to tool limitations (most linters don't support extending from installed
-# packages), we use the package config path directly in tool invocations:
+# All base rules come from the package. This file contains ONLY project-specific
+# overrides.
 #
-# Usage:
-#   CONFIG=$(poetry run python -c "from lint_configs import get_python_config_path; print(get_python_config_path())")
-#   poetry run ruff check --config $CONFIG
-#   poetry run mypy --config-file $CONFIG
-#   poetry run pylint --rcfile $CONFIG
-#   poetry run black --config $CONFIG
-#   poetry run pytest -c $CONFIG
-#
-# Or add to pyproject.toml as needed for tools that require it.
-# Project-specific overrides are defined below.
+# To update base configs: poetry update agentic-guardrails
 # ==============================================================================
+
+# Ruff configuration - extends from agentic-guardrails package
+[tool.ruff]
+extend = ".venv/lib/python3.11/site-packages/lint_configs/ruff.toml"
+
+# Project-specific overrides
+[tool.ruff.lint.isort]
+known-first-party = ["plangen"]
 
 # Project-specific MyPy overrides for third-party libraries
 [[tool.mypy.overrides]]
