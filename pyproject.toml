@@ -58,25 +58,25 @@ build-backend = "poetry.core.masonry.api"
 
 # ==============================================================================
 # Linting and Code Quality Configuration
-# References: https://github.com/cajias/lint-configs
+# References: https://github.com/cajias/lint-configs/releases/tag/v1.0.0
 #
-# Ruff: Configuration in .ruff.toml (synced from cajias/lint-configs)
+# Ruff: Configuration in .ruff.toml (synced from cajias/lint-configs v1.0.0)
 #       Run scripts/sync-lint-config.sh to update from upstream
 # ==============================================================================
 
-# Black configuration (from cajias/lint-configs)
+# Black configuration (from cajias/lint-configs v1.0.0)
 [tool.black]
 line-length = 120
 target-version = ["py39"]
 
-# isort configuration (from cajias/lint-configs)
+# isort configuration (from cajias/lint-configs v1.0.0)
 [tool.isort]
 profile = "black"
 line_length = 120
 force_single_line = false
 lines_after_imports = 2
 
-# MyPy configuration (from cajias/lint-configs)
+# MyPy configuration (from cajias/lint-configs v1.0.0)
 [tool.mypy]
 python_version = "3.9"
 warn_return_any = true
@@ -99,7 +99,7 @@ module = [
 ]
 ignore_missing_imports = true
 
-# Pylint configuration (from cajias/lint-configs)
+# Pylint configuration (from cajias/lint-configs v1.0.0)
 [tool.pylint.main]
 jobs = 0
 load-plugins = ["pylint.extensions.docparams"]
