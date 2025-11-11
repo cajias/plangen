@@ -109,3 +109,45 @@ class TestREBASE:
             assert iteration["score"] == expected_iterations[i]["score"]
             assert iteration["plan"] == expected_iterations[i]["plan"]
             assert iteration["feedback"] == expected_iterations[i]["feedback"]
+
+    def test_correct_parameters_accepted(self):
+        """Test that REBASE accepts correct parameters (regression test for issue #27)."""
+        mock_llm = MagicMock(spec=LLMInterface)
+        mock_constraint_agent = MagicMock()
+        mock_verification_agent = MagicMock()
+
+        # These parameters should work (REBASE-specific parameters)
+        algorithm = REBASE(
+            llm_interface=mock_llm,
+            constraint_agent=mock_constraint_agent,
+            verification_agent=mock_verification_agent,
+            max_iterations=5,
+            improvement_threshold=10.0,
+            temperature=0.7,
+        )
+
+        # Verify the algorithm was created successfully
+        assert algorithm.max_iterations == 5
+        assert algorithm.improvement_threshold == 10.0
+        assert algorithm.temperature == 0.7
+
+    def test_incorrect_tree_of_thought_parameters_rejected(self):
+        """Test that REBASE rejects Tree of Thought parameters (regression test for issue #27)."""
+        mock_llm = MagicMock(spec=LLMInterface)
+        mock_constraint_agent = MagicMock()
+        mock_verification_agent = MagicMock()
+
+        # These Tree of Thought parameters should NOT work with REBASE
+        with pytest.raises(TypeError) as exc_info:
+            REBASE(
+                llm_interface=mock_llm,
+                constraint_agent=mock_constraint_agent,
+                verification_agent=mock_verification_agent,
+                max_depth=5,  # TreeOfThought parameter - should fail
+                max_width=3,  # TreeOfThought parameter - should fail
+                pruning_threshold=0.3,  # TreeOfThought parameter - should fail
+                temperature=0.7,
+            )
+
+        # Verify that the error mentions unexpected keyword arguments
+        assert "unexpected keyword argument" in str(exc_info.value).lower()
