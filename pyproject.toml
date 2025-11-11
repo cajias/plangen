@@ -60,8 +60,8 @@ build-backend = "poetry.core.masonry.api"
 # Linting and Code Quality Configuration
 # References: https://github.com/cajias/lint-configs/releases/tag/v1.0.0
 #
-# Ruff: Configuration in .ruff.toml (synced from cajias/lint-configs v1.0.0)
-#       Run scripts/sync-lint-config.sh to update from upstream
+# Ruff: Configuration in .ruff.toml (copied from v1.0.0 release)
+# Other tools: Configured below (Black, isort, MyPy, Pylint, Pytest, Coverage)
 # ==============================================================================
 
 # Black configuration (from cajias/lint-configs v1.0.0)
