@@ -96,6 +96,36 @@ class TestVerificationAgent:
         mock_prompt_manager.get_system_message.assert_called_with("verification")
         assert mock_prompt_manager.get_prompt.call_count == 2
 
+    def test_verify_solutions_method_exists_regression_issue_26(self):
+        """Regression test for issue #26: verify_solutions method must exist.
+
+        This test ensures that the VerificationAgent class has a verify_solutions
+        method with the correct signature that was missing in issue #26.
+        """
+        # Setup mocks
+        mock_model = MagicMock()
+        mock_prompt_manager = MagicMock()
+
+        # Create agent
+        agent = VerificationAgent(mock_model, mock_prompt_manager)
+
+        # Verify the method exists and is callable
+        assert hasattr(agent, "verify_solutions"), "VerificationAgent must have verify_solutions method"
+        assert callable(agent.verify_solutions), "verify_solutions must be callable"
+
+        # Verify it accepts the expected parameters
+        mock_model.generate.return_value = "Verification"
+        mock_prompt_manager.get_system_message.return_value = "System"
+        mock_prompt_manager.get_prompt.return_value = "Prompt"
+
+        # Call with expected signature: (solutions: List[str], constraints: str)
+        result = agent.verify_solutions(["Solution"], "Constraints")
+
+        # Verify it returns a list
+        assert isinstance(result, list), "verify_solutions must return a list"
+        assert len(result) == 1
+        assert result[0] == "Verification"
+
 
 class TestSelectionAgent:
     """Tests for SelectionAgent."""
