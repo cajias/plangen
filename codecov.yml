@@ -1,0 +1,37 @@
+# Codecov configuration for PlanGEN
+# See: https://docs.codecov.io/docs/codecov-yaml
+
+coverage:
+  precision: 2
+  round: down
+  range: "70...100"
+
+  status:
+    project:
+      default:
+        target: 80%        # Target coverage threshold
+        threshold: 2%      # Allow 2% drop before failing
+        if_ci_failed: error
+
+    patch:
+      default:
+        target: 75%        # New code should have good coverage
+        threshold: 5%
+        if_ci_failed: error
+
+comment:
+  layout: "reach,diff,flags,tree,footer"
+  behavior: default
+  require_changes: false
+  require_base: false
+  require_head: true
+
+ignore:
+  - "tests/**"           # Don't measure coverage of test code
+  - "examples/**"        # Don't measure coverage of example code
+  - "**/__pycache__/**"
+  - "**/.pytest_cache/**"
+  - "**/setup.py"
+
+github_checks:
+  annotations: true
