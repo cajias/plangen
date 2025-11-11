@@ -41,3 +41,4 @@ solution_metadata.json
 htmlcov/
 .pytest_cache/
 .mypy_cache/
+.hidden/
