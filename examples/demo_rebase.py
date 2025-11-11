@@ -50,9 +50,8 @@ def main():
         llm_interface=llm_interface,
         constraint_agent=constraint_agent,
         verification_agent=verification_agent,
-        max_depth=5,  # Maximum depth of the tree
-        max_width=3,  # Maximum children per node
-        pruning_threshold=0.3,  # Prune paths with relative score < 0.3
+        max_iterations=5,  # Maximum number of refinement iterations
+        improvement_threshold=10.0,  # Minimum score improvement to continue refining
         temperature=0.7,  # Temperature for generation
     )
 
@@ -75,63 +74,37 @@ def main():
 
         # Print algorithm statistics
         print("\n=== Algorithm Statistics ===")
-        print(f"Max Depth: {metadata['max_depth']}")
-        print(f"Max Width: {metadata['max_width']}")
-        print(f"Pruning Threshold: {metadata['pruning_threshold']}")
-        print(f"Total Nodes Explored: {metadata['nodes_explored']}")
+        print(f"Max Iterations: {metadata['max_iterations']}")
+        print(f"Improvement Threshold: {metadata['improvement_threshold']}")
+        print(f"Total Iterations Completed: {len(metadata['iterations']) - 1}")
 
-        # Print exploration tree statistics
-        complete_nodes = sum(1 for node in metadata["all_nodes"] if node["complete"])
-        pruned_nodes = metadata["nodes_explored"] - len(
-            [
-                node
-                for node in metadata["all_nodes"]
-                if node["score"] / 100 >= metadata["pruning_threshold"]
-            ]
-        )
-
-        print(f"\n=== Tree Statistics ===")
-        print(f"Complete Solutions Found: {complete_nodes}")
-        print(f"Nodes Pruned: {pruned_nodes}")
-
-        # Print the node history, grouped by depth
-        print("\n=== Node Exploration History ===")
-        max_depth_found = max(node["depth"] for node in metadata["all_nodes"])
-
-        for depth in range(max_depth_found + 1):
-            depth_nodes = [
-                node for node in metadata["all_nodes"] if node["depth"] == depth
-            ]
-            depth_nodes.sort(key=lambda x: x["score"], reverse=True)
-
-            print(f"\nDepth {depth} (Total nodes: {len(depth_nodes)}):")
-            for i, node in enumerate(depth_nodes):
-                status = "✓" if node["complete"] else " "
-                pruned = (
-                    "🗑" if node["score"] / 100 < metadata["pruning_threshold"] else " "
-                )
-                steps_text = " → ".join(node["steps"])
-                print(f"{status}{pruned} [{node['score']:>3.0f}] {steps_text}")
+        # Print iteration history
+        print("\n=== Iteration History ===")
+        for i, iteration in enumerate(metadata["iterations"]):
+            print(f"\nIteration {i}:")
+            print(f"  Score: {iteration['score']:.1f}")
+            if i > 0:
+                improvement = iteration["score"] - metadata["iterations"][i-1]["score"]
+                print(f"  Improvement: {improvement:+.1f}")
+            print(f"  Plan: {iteration['plan'][:100]}...")  # First 100 chars
+            if iteration["feedback"]:
+                print(f"  Feedback: {iteration['feedback'][:100]}...")  # First 100 chars
 
         # Save the results to a file
         with open("rebase_result.json", "w") as f:
             # Convert any non-serializable objects to strings
             serializable_metadata = {
                 "algorithm": metadata["algorithm"],
-                "max_depth": metadata["max_depth"],
-                "max_width": metadata["max_width"],
-                "pruning_threshold": metadata["pruning_threshold"],
-                "nodes_explored": metadata["nodes_explored"],
+                "max_iterations": metadata["max_iterations"],
+                "improvement_threshold": metadata["improvement_threshold"],
                 "constraints": metadata["constraints"],
-                "all_nodes": [
+                "iterations": [
                     {
-                        "steps": node["steps"],
-                        "score": node["score"],
-                        "depth": node["depth"],
-                        "complete": node.get("complete", False),
-                        "feedback": str(node.get("feedback", "")),
+                        "plan": iteration["plan"],
+                        "score": iteration["score"],
+                        "feedback": str(iteration.get("feedback", "")),
                     }
-                    for node in metadata["all_nodes"]
+                    for iteration in metadata["iterations"]
                 ],
             }
 
