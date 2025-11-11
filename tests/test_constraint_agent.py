@@ -21,8 +21,8 @@ class TestConstraintAgent(unittest.TestCase):
             model=self.mock_model, prompt_manager=self.mock_prompt_manager
         )
 
-    def test_run_extracts_constraints(self):
-        """Test that run method extracts constraints correctly."""
+    def test_extract_constraints_extracts_correctly(self):
+        """Test that extract_constraints method extracts constraints correctly."""
         # Mock prompt manager responses
         self.mock_prompt_manager.get_system_message.return_value = (
             "You are a constraint extraction agent"
@@ -58,7 +58,7 @@ class TestConstraintAgent(unittest.TestCase):
         self.assertIn("Meeting must be between 9:00 and 17:00", constraints)
         self.assertIn("All participants must be available", constraints)
 
-    def test_run_handles_different_formats(self):
+    def test_extract_constraints_handles_different_formats(self):
         """Test that extract_constraints method handles different constraint formats."""
         # Mock prompt manager responses
         self.mock_prompt_manager.get_system_message.return_value = (
@@ -98,34 +98,32 @@ class TestConstraintAgent(unittest.TestCase):
             "extract_constraints must be callable"
         )
 
-    def test_extract_constraints_delegates_to_run(self):
-        """Regression test for issue #25: Verify extract_constraints and run produce same results."""
-        # Mock the llm_interface used by ConstraintAgent
-        mock_llm_interface = MagicMock()
-        mock_llm_interface.generate.return_value = """
+    def test_extract_constraints_returns_constraints(self):
+        """Regression test for issue #25: Verify extract_constraints returns expected constraints."""
+        # Mock prompt manager responses
+        self.mock_prompt_manager.get_system_message.return_value = (
+            "You are a constraint extraction agent"
+        )
+        self.mock_prompt_manager.get_prompt.return_value = (
+            "Extract constraints from: {problem}"
+        )
+
+        # Mock model response
+        self.mock_model.generate.return_value = """
         1. Constraint one
         2. Constraint two
         3. Constraint three
         """
 
-        agent = ConstraintAgent(llm_interface=mock_llm_interface)
         problem_statement = "Test problem statement"
 
-        # Call both methods
-        result_from_run = agent.run(problem_statement)
-        result_from_extract = agent.extract_constraints(problem_statement)
+        # Call extract_constraints
+        result = self.agent.extract_constraints(problem_statement)
 
-        # Verify both methods produce the same results
-        self.assertEqual(
-            result_from_run,
-            result_from_extract,
-            "extract_constraints should delegate to run and produce identical results"
-        )
-
-        # Verify both contain expected constraints
-        self.assertIn("Constraint one", result_from_run)
-        self.assertIn("Constraint two", result_from_run)
-        self.assertIn("Constraint three", result_from_run)
+        # Verify the result contains expected constraints
+        self.assertIn("Constraint one", result)
+        self.assertIn("Constraint two", result)
+        self.assertIn("Constraint three", result)
 
 
 if __name__ == "__main__":

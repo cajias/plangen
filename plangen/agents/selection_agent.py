@@ -1,13 +1,11 @@
-"""
-Selection agent for PlanGEN
-"""
+"""Selection agent for PlanGEN."""
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Self
 
 from pydantic import BaseModel, Field
 
-from ..models import BaseModelInterface
-from ..prompts import PromptManager
+from plangen.models import BaseModelInterface
+from plangen.prompts import PromptManager
 
 
 class Solution(BaseModel):
@@ -21,10 +19,10 @@ class SelectionAgent:
     """Agent for selecting the best solution based on verification results."""
 
     def __init__(
-        self,
+        self: Self,
         model: BaseModelInterface,
         prompt_manager: PromptManager,
-    ):
+    ) -> None:
         """Initialize the selection agent.
 
         Args:
@@ -35,8 +33,8 @@ class SelectionAgent:
         self.prompt_manager = prompt_manager
 
     def select_best_solution(
-        self, solutions: List[str], verification_results: List[str]
-    ) -> Dict[str, Any]:
+        self: Self, solutions: list[str], verification_results: list[str],
+    ) -> dict[str, Any]:
         """Select the best solution based on verification results.
 
         Args:
@@ -55,7 +53,7 @@ class SelectionAgent:
         ]
 
         prompt = self.prompt_manager.get_prompt(
-            "solution_selection", solutions=solution_objects
+            "solution_selection", solutions=solution_objects,
         )
 
         selection_reasoning = self.model.generate(prompt, system_message=system_message)
@@ -63,7 +61,7 @@ class SelectionAgent:
         # Extract the selected solution index (assuming it's mentioned in the reasoning)
         # This is a simple heuristic; in practice, you might want a more robust approach
         selected_index = 0
-        for i, solution in enumerate(solutions):
+        for i, _solution in enumerate(solutions):
             if (
                 f"Solution {i+1}" in selection_reasoning
                 and "best" in selection_reasoning.lower()

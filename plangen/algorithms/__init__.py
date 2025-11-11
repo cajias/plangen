@@ -1,5 +1,4 @@
-"""
-PlanGEN algorithms module
+"""PlanGEN algorithms module.
 
 This module provides various planning algorithms that can be used with the PlanGEN framework.
 All algorithms implement the BaseAlgorithm interface, making them interchangeable components.
@@ -18,4 +17,5 @@ from .mixture_of_algorithms import MixtureOfAlgorithms
 from .rebase import REBASE
 from .tree_of_thought import TreeOfThought
 
-__all__ = ["BaseAlgorithm", "BestOfN", "TreeOfThought", "REBASE", "MixtureOfAlgorithms"]
+
+__all__ = ["REBASE", "BaseAlgorithm", "BestOfN", "MixtureOfAlgorithms", "TreeOfThought"]

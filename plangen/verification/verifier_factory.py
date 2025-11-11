@@ -1,11 +1,13 @@
-"""
-Factory for creating domain-specific verifiers.
-"""
+"""Factory for creating domain-specific verifiers."""
+from __future__ import annotations
 
-from typing import List, Type
+from typing import TYPE_CHECKING, Self
 
-from .base_verifier import BaseVerifier
 from .strategies.math_verifier import MathVerifier
+
+
+if TYPE_CHECKING:
+    from .base_verifier import BaseVerifier
 
 
 class VerifierFactory:
@@ -15,15 +17,15 @@ class VerifierFactory:
     verifier for a given problem based on domain detection.
     """
 
-    def __init__(self):
+    def __init__(self: Self) -> None:
         """Initialize the verifier factory."""
         # Register available verifiers
-        self._verifiers: List[BaseVerifier] = [
+        self._verifiers: list[BaseVerifier] = [
             MathVerifier(),
             # Add more verifiers here as they are implemented
         ]
 
-    def get_verifier(self, problem_statement: str) -> BaseVerifier:
+    def get_verifier(self: Self, problem_statement: str) -> BaseVerifier:
         """Get the appropriate verifier for a given problem.
 
         Args:
@@ -40,12 +42,15 @@ class VerifierFactory:
             if verifier.is_applicable(problem_statement):
                 return verifier
 
-        raise ValueError(
+        msg = (
             "No suitable verifier found for the given problem. "
             "The problem domain may not be supported yet."
         )
+        raise ValueError(
+            msg,
+        )
 
-    def register_verifier(self, verifier: BaseVerifier) -> None:
+    def register_verifier(self: Self, verifier: BaseVerifier) -> None:
         """Register a new verifier.
 
         Args:
@@ -53,7 +58,7 @@ class VerifierFactory:
         """
         self._verifiers.append(verifier)
 
-    def get_supported_domains(self) -> List[str]:
+    def get_supported_domains(self: Self) -> list[str]:
         """Get a list of supported problem domains.
 
         Returns:

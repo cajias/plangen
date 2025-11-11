@@ -1,13 +1,12 @@
-"""
-Template loader for PlanGEN.
+"""Template loader for PlanGEN.
 
 This module provides functionality for loading and rendering templates used by
 PlanGEN algorithms and agents.
 """
+from __future__ import annotations
 
-import os
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Self
 
 from jinja2 import Environment, FileSystemLoader, TemplateNotFound, select_autoescape
 
@@ -15,7 +14,6 @@ from jinja2 import Environment, FileSystemLoader, TemplateNotFound, select_autoe
 class TemplateError(Exception):
     """Exception raised for template-related errors."""
 
-    pass
 
 
 class TemplateLoader:
@@ -30,7 +28,7 @@ class TemplateLoader:
         env: Jinja2 environment for template rendering
     """
 
-    def __init__(self, template_dir: Optional[str] = None):
+    def __init__(self: Self, template_dir: str | None = None) -> None:
         """Initialize the template loader.
 
         Args:
@@ -52,7 +50,7 @@ class TemplateLoader:
         )
 
     def get_algorithm_template(
-        self, algorithm: str, template_type: str, domain: Optional[str] = None
+        self: Self, algorithm: str, template_type: str, domain: str | None = None,
     ) -> str:
         """Get the path to a template for a specific algorithm.
 
@@ -88,12 +86,15 @@ class TemplateLoader:
         if (self.template_dir / common_path).exists():
             return common_path
 
-        raise TemplateError(
+        msg = (
             f"Template not found for algorithm '{algorithm}', "
             f"type '{template_type}', domain '{domain}'"
         )
+        raise TemplateError(
+            msg,
+        )
 
-    def render_template(self, template_path: str, variables: Dict[str, Any]) -> str:
+    def render_template(self: Self, template_path: str, variables: dict[str, Any]) -> str:
         """Render a template with the given variables.
 
         Args:
@@ -108,8 +109,11 @@ class TemplateLoader:
         """
         try:
             template = self.env.get_template(template_path)
-            return template.render(**variables)
         except TemplateNotFound:
-            raise TemplateError(f"Template not found: {template_path}")
-        except Exception as e:
-            raise TemplateError(f"Error rendering template: {str(e)}")
+            msg = f"Template not found: {template_path}"
+            raise TemplateError(msg) from None
+        except (OSError, ValueError) as e:
+            msg = f"Error rendering template: {e!s}"
+            raise TemplateError(msg) from None
+        else:
+            return template.render(**variables)

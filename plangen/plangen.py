@@ -1,12 +1,9 @@
-"""
-Main PlanGEN implementation using LangGraph
-"""
+"""Main PlanGEN implementation using LangGraph."""
+from __future__ import annotations
 
-from typing import Annotated, Any, Dict, List, Optional, TypedDict
+from typing import Any, Self, TypedDict
 
 from langgraph.graph import END, StateGraph
-from langgraph.prebuilt import ToolNode
-from pydantic import BaseModel, Field
 
 # Import from the main agents module, not the package
 from .agents import ConstraintAgent, SelectionAgent, SolutionAgent, VerificationAgent
@@ -18,22 +15,22 @@ class PlanGENState(TypedDict):
     """State for the PlanGEN workflow."""
 
     problem: str
-    constraints: Optional[str]
-    solutions: Optional[List[str]]
-    verification_results: Optional[List[str]]
-    selected_solution: Optional[Dict[str, Any]]
-    error: Optional[str]
+    constraints: str | None
+    solutions: list[str] | None
+    verification_results: list[str] | None
+    selected_solution: dict[str, Any] | None
+    error: str | None
 
 
 class PlanGEN:
     """Main PlanGEN implementation using LangGraph."""
 
     def __init__(
-        self,
-        model: Optional[BaseModelInterface] = None,
-        prompt_manager: Optional[PromptManager] = None,
+        self: Self,
+        model: BaseModelInterface | None = None,
+        prompt_manager: PromptManager | None = None,
         num_solutions: int = 3,
-    ):
+    ) -> None:
         """Initialize the PlanGEN framework.
 
         Args:
@@ -59,7 +56,7 @@ class PlanGEN:
         # Build the workflow graph
         self.workflow = self._build_workflow()
 
-    def _extract_constraints(self, state: PlanGENState) -> PlanGENState:
+    def _extract_constraints(self: Self, state: PlanGENState) -> PlanGENState:
         """Extract constraints from the problem statement.
 
         Args:
@@ -70,11 +67,12 @@ class PlanGEN:
         """
         try:
             constraints = self.constraint_agent.extract_constraints(state["problem"])
+        except (RuntimeError, ValueError, KeyError) as e:
+            return {"error": f"Error extracting constraints: {e!s}"}
+        else:
             return {"constraints": constraints}
-        except Exception as e:
-            return {"error": f"Error extracting constraints: {str(e)}"}
 
-    def _generate_solutions(self, state: PlanGENState) -> PlanGENState:
+    def _generate_solutions(self: Self, state: PlanGENState) -> PlanGENState:
         """Generate solutions based on constraints.
 
         Args:
@@ -85,13 +83,14 @@ class PlanGEN:
         """
         try:
             solutions = self.solution_agent.generate_solutions(
-                state["problem"], state["constraints"], num_solutions=self.num_solutions
+                state["problem"], state["constraints"], num_solutions=self.num_solutions,
             )
+        except (RuntimeError, ValueError, KeyError) as e:
+            return {"error": f"Error generating solutions: {e!s}"}
+        else:
             return {"solutions": solutions}
-        except Exception as e:
-            return {"error": f"Error generating solutions: {str(e)}"}
 
-    def _verify_solutions(self, state: PlanGENState) -> PlanGENState:
+    def _verify_solutions(self: Self, state: PlanGENState) -> PlanGENState:
         """Verify solutions against constraints.
 
         Args:
@@ -102,13 +101,14 @@ class PlanGEN:
         """
         try:
             verification_results = self.verification_agent.verify_solutions(
-                state["solutions"], state["constraints"]
+                state["solutions"], state["constraints"],
             )
+        except (RuntimeError, ValueError, KeyError) as e:
+            return {"error": f"Error verifying solutions: {e!s}"}
+        else:
             return {"verification_results": verification_results}
-        except Exception as e:
-            return {"error": f"Error verifying solutions: {str(e)}"}
 
-    def _select_solution(self, state: PlanGENState) -> PlanGENState:
+    def _select_solution(self: Self, state: PlanGENState) -> PlanGENState:
         """Select the best solution based on verification results.
 
         Args:
@@ -119,13 +119,14 @@ class PlanGEN:
         """
         try:
             selected = self.selection_agent.select_best_solution(
-                state["solutions"], state["verification_results"]
+                state["solutions"], state["verification_results"],
             )
+        except (RuntimeError, ValueError, KeyError) as e:
+            return {"error": f"Error selecting solution: {e!s}"}
+        else:
             return {"selected_solution": selected}
-        except Exception as e:
-            return {"error": f"Error selecting solution: {str(e)}"}
 
-    def _should_end(self, state: PlanGENState) -> str:
+    def _should_end(self: Self, state: PlanGENState) -> str:
         """Determine if the workflow should end.
 
         Args:
@@ -138,7 +139,7 @@ class PlanGEN:
             return "error"
         return "continue"
 
-    def _build_workflow(self) -> StateGraph:
+    def _build_workflow(self: Self) -> StateGraph:
         """Build the workflow graph.
 
         Returns:
@@ -165,7 +166,7 @@ class PlanGEN:
         # Compile the graph
         return workflow.compile()
 
-    def solve(self, problem: str) -> Dict[str, Any]:
+    def solve(self: Self, problem: str) -> dict[str, Any]:
         """Solve a problem using the PlanGEN workflow.
 
         Args:
@@ -179,35 +180,29 @@ class PlanGEN:
             state = {"problem": problem}
 
             # Extract constraints
-            print("Extracting constraints...")
             constraints_result = self._extract_constraints(state)
             if "error" in constraints_result:
                 return {"problem": problem, "error": constraints_result["error"]}
             state.update(constraints_result)
 
             # Generate solutions
-            print("Generating solutions...")
             solutions_result = self._generate_solutions(state)
             if "error" in solutions_result:
                 return {**state, "error": solutions_result["error"]}
             state.update(solutions_result)
 
             # Verify solutions
-            print("Verifying solutions...")
             verify_result = self._verify_solutions(state)
             if "error" in verify_result:
                 return {**state, "error": verify_result["error"]}
             state.update(verify_result)
 
             # Select solution
-            print("Selecting best solution...")
             select_result = self._select_solution(state)
             if "error" in select_result:
                 return {**state, "error": select_result["error"]}
             state.update(select_result)
-
-            print("Solution process complete.")
+        except (RuntimeError, ValueError, KeyError) as e:
+            return {"problem": problem, "error": f"Error in workflow: {e!s}"}
+        else:
             return state
-
-        except Exception as e:
-            return {"problem": problem, "error": f"Error in workflow: {str(e)}"}

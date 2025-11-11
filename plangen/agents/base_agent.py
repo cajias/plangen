@@ -1,23 +1,22 @@
-"""
-Base Agent class for PlanGEN
-"""
+"""Base Agent class for PlanGEN."""
+from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional
+from typing import Self
 
-from ..utils.llm_interface import LLMInterface
+from plangen.utils.llm_interface import LLMInterface
 
 
 class BaseAgent(ABC):
     """Base class for all PlanGEN agents."""
 
     def __init__(
-        self,
-        llm_interface: Optional[LLMInterface] = None,
+        self: Self,
+        llm_interface: LLMInterface | None = None,
         model_name: str = "gpt-4o",
         temperature: float = 0.7,
-        system_message: Optional[str] = None,
-    ):
+        system_message: str | None = None,
+    ) -> None:
         """Initialize the base agent.
 
         Args:
@@ -33,14 +32,13 @@ class BaseAgent(ABC):
         self.system_message = system_message
 
     @abstractmethod
-    def run(self, *args, **kwargs) -> Any:
+    def run(self: Self, *args: object, **kwargs: object) -> object:
         """Run the agent.
 
         This method should be implemented by all subclasses.
         """
-        pass
 
-    def _generate_prompt(self, template: str, **kwargs) -> str:
+    def _generate_prompt(self: Self, template: str, **kwargs: object) -> str:
         """Generate a prompt from a template.
 
         Args:
@@ -53,10 +51,10 @@ class BaseAgent(ABC):
         return template.format(**kwargs)
 
     def _call_llm(
-        self,
+        self: Self,
         prompt: str,
-        temperature: Optional[float] = None,
-        max_tokens: Optional[int] = None,
+        temperature: float | None = None,
+        max_tokens: int | None = None,
     ) -> str:
         """Call the LLM with the given prompt.
 

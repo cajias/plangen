@@ -1,21 +1,20 @@
-"""
-LLM Interface for PlanGEN
-"""
+"""LLM Interface for PlanGEN."""
+from __future__ import annotations
 
 import os
-from typing import Any, Dict, List, Optional, Union
+from typing import Self
 
 
 class LLMInterface:
     """Interface for interacting with LLMs."""
 
     def __init__(
-        self,
+        self: Self,
         model_name: str = "gpt-4o",
         temperature: float = 0.7,
         max_tokens: int = 1024,
-        api_key: Optional[str] = None,
-    ):
+        api_key: str | None = None,
+    ) -> None:
         """Initialize the LLM interface.
 
         Args:
@@ -36,9 +35,10 @@ class LLMInterface:
         elif "gemini" in model_name.lower():
             self._setup_google(api_key)
         else:
-            raise ValueError(f"Unsupported model: {model_name}")
+            msg = f"Unsupported model: {model_name}"
+            raise ValueError(msg)
 
-    def _setup_openai(self, api_key: Optional[str] = None):
+    def _setup_openai(self: Self, api_key: str | None = None) -> None:
         """Set up the OpenAI client.
 
         Args:
@@ -48,15 +48,14 @@ class LLMInterface:
             import openai
 
             self.client = openai.OpenAI(
-                api_key=api_key or os.environ.get("OPENAI_API_KEY")
+                api_key=api_key or os.environ.get("OPENAI_API_KEY"),
             )
             self.provider = "openai"
         except ImportError:
-            raise ImportError(
-                "OpenAI package not installed. Install it with 'pip install openai'."
-            )
+            msg = "OpenAI package not installed. Install it with 'pip install openai'."
+            raise ImportError(msg) from None
 
-    def _setup_anthropic(self, api_key: Optional[str] = None):
+    def _setup_anthropic(self: Self, api_key: str | None = None) -> None:
         """Set up the Anthropic client.
 
         Args:
@@ -66,15 +65,14 @@ class LLMInterface:
             import anthropic
 
             self.client = anthropic.Anthropic(
-                api_key=api_key or os.environ.get("ANTHROPIC_API_KEY")
+                api_key=api_key or os.environ.get("ANTHROPIC_API_KEY"),
             )
             self.provider = "anthropic"
         except ImportError:
-            raise ImportError(
-                "Anthropic package not installed. Install it with 'pip install anthropic'."
-            )
+            msg = "Anthropic package not installed. Install it with 'pip install anthropic'."
+            raise ImportError(msg) from None
 
-    def _setup_google(self, api_key: Optional[str] = None):
+    def _setup_google(self: Self, api_key: str | None = None) -> None:
         """Set up the Google client.
 
         Args:
@@ -87,16 +85,15 @@ class LLMInterface:
             self.client = genai
             self.provider = "google"
         except ImportError:
-            raise ImportError(
-                "Google Generative AI package not installed. Install it with 'pip install google-generativeai'."
-            )
+            msg = "Google Generative AI package not installed. Install it with 'pip install google-generativeai'."
+            raise ImportError(msg) from None
 
     def generate(
-        self,
+        self: Self,
         prompt: str,
-        system_message: Optional[str] = None,
-        temperature: Optional[float] = None,
-        max_tokens: Optional[int] = None,
+        system_message: str | None = None,
+        temperature: float | None = None,
+        max_tokens: int | None = None,
     ) -> str:
         """Generate text using the LLM.
 
@@ -114,17 +111,17 @@ class LLMInterface:
 
         if self.provider == "openai":
             return self._generate_openai(prompt, system_message, temp, tokens)
-        elif self.provider == "anthropic":
+        if self.provider == "anthropic":
             return self._generate_anthropic(prompt, system_message, temp, tokens)
-        elif self.provider == "google":
+        if self.provider == "google":
             return self._generate_google(prompt, system_message, temp, tokens)
-        else:
-            raise ValueError(f"Unsupported provider: {self.provider}")
+        msg = f"Unsupported provider: {self.provider}"
+        raise ValueError(msg) from None
 
     def _generate_openai(
-        self,
+        self: Self,
         prompt: str,
-        system_message: Optional[str] = None,
+        system_message: str | None = None,
         temperature: float = 0.7,
         max_tokens: int = 1024,
     ) -> str:
@@ -156,9 +153,9 @@ class LLMInterface:
         return response.choices[0].message.content
 
     def _generate_anthropic(
-        self,
+        self: Self,
         prompt: str,
-        system_message: Optional[str] = None,
+        system_message: str | None = None,
         temperature: float = 0.7,
         max_tokens: int = 1024,
     ) -> str:
@@ -190,9 +187,9 @@ class LLMInterface:
         return response.content[0].text
 
     def _generate_google(
-        self,
+        self: Self,
         prompt: str,
-        system_message: Optional[str] = None,
+        system_message: str | None = None,
         temperature: float = 0.7,
         max_tokens: int = 1024,
     ) -> str:
@@ -221,12 +218,12 @@ class LLMInterface:
         return response.text
 
     def batch_generate(
-        self,
-        prompts: List[str],
-        system_message: Optional[str] = None,
-        temperature: Optional[float] = None,
-        max_tokens: Optional[int] = None,
-    ) -> List[str]:
+        self: Self,
+        prompts: list[str],
+        system_message: str | None = None,
+        temperature: float | None = None,
+        max_tokens: int | None = None,
+    ) -> list[str]:
         """Generate text for multiple prompts.
 
         Args:

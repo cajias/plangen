@@ -1,40 +1,43 @@
-"""
-Base Algorithm class for PlanGEN
-"""
+"""Base Algorithm class for PlanGEN."""
+from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Self
 
-from ..agents.constraint_agent import ConstraintAgent
-from ..agents.verification_agent import VerificationAgent
-from ..utils.llm_interface import LLMInterface
-from ..visualization.observers import Observable
+from plangen.agents.constraint_agent import ConstraintAgent
+from plangen.agents.verification_agent import VerificationAgent
+from plangen.utils.llm_interface import LLMInterface
+from plangen.visualization.observers import Observable
 
 
 class BaseAlgorithm(ABC, Observable):
     """Base class for all PlanGEN algorithms."""
 
     def __init__(
-        self,
-        llm_interface: Optional[LLMInterface] = None,
-        constraint_agent: Optional[ConstraintAgent] = None,
-        verification_agent: Optional[VerificationAgent] = None,
-        model_name: str = "gpt-4o",
-        temperature: float = 0.7,
-        max_iterations: int = 5,
-    ):
+        self: Self,
+        llm_interface: LLMInterface | None = None,
+        constraint_agent: ConstraintAgent | None = None,
+        verification_agent: VerificationAgent | None = None,
+        **kwargs: object,
+    ) -> None:
         """Initialize the base algorithm.
 
         Args:
             llm_interface: Optional LLM interface to use
             constraint_agent: Optional constraint agent to use
             verification_agent: Optional verification agent to use
-            model_name: Name of the model to use if llm_interface is not provided
-            temperature: Temperature for LLM generation
-            max_iterations: Maximum number of iterations for the algorithm
+            **kwargs: Additional configuration options:
+                - model_name (str): Name of the model (default: "gpt-4o")
+                - temperature (float): Temperature for LLM generation (default: 0.7)
+                - max_iterations (int): Maximum iterations (default: 5)
         """
         # Initialize Observable
         Observable.__init__(self)
+
+        # Extract kwargs with defaults
+        model_name = str(kwargs.get("model_name", "gpt-4o"))
+        temperature = float(kwargs.get("temperature", 0.7))
+        max_iterations = int(kwargs.get("max_iterations", 5))
 
         self.llm_interface = llm_interface or LLMInterface(
             model_name=model_name,
@@ -62,7 +65,7 @@ class BaseAlgorithm(ABC, Observable):
         )
 
     @abstractmethod
-    def run(self, problem_statement: str) -> Tuple[str, float, Dict[str, Any]]:
+    def run(self: Self, problem_statement: str) -> tuple[str, float, dict[str, Any]]:
         """Run the algorithm on the given problem statement.
 
         Args:
@@ -75,13 +78,12 @@ class BaseAlgorithm(ABC, Observable):
             ValueError: If the problem statement is empty
             RuntimeError: If there's an error during algorithm execution
         """
-        pass
 
     def _generate_plan(
-        self,
+        self: Self,
         problem_statement: str,
-        constraints: List[str],
-        temperature: Optional[float] = None,
+        constraints: list[str],
+        temperature: float | None = None,
     ) -> str:
         """Generate a plan for the given problem statement and constraints.
 
@@ -109,8 +111,8 @@ class BaseAlgorithm(ABC, Observable):
         )
 
     def _verify_plan(
-        self, problem_statement: str, constraints: List[str], plan: str
-    ) -> Tuple[str, float]:
+        self: Self, problem_statement: str, constraints: list[str], plan: str,
+    ) -> tuple[str, float]:
         """Verify a plan against constraints and provide a reward score.
 
         Args:

@@ -1,21 +1,20 @@
-"""
-Verification agent for PlanGEN.
-"""
+"""Verification agent for PlanGEN."""
 
-from typing import Any, Dict, List, Optional, Tuple
 
-from ..models import BaseModelInterface
-from ..prompts import PromptManager
+from typing import Self
+
+from plangen.models import BaseModelInterface
+from plangen.prompts import PromptManager
 
 
 class VerificationAgent:
     """Agent for verifying plans and solutions."""
 
     def __init__(
-        self,
+        self: Self,
         model: BaseModelInterface,
         prompt_manager: PromptManager,
-    ):
+    ) -> None:
         """Initialize the verification agent.
 
         Args:
@@ -26,8 +25,8 @@ class VerificationAgent:
         self.prompt_manager = prompt_manager
 
     def verify_solutions(
-        self, solutions: List[str], constraints: str
-    ) -> List[str]:
+        self: Self, solutions: list[str], constraints: str,
+    ) -> list[str]:
         """Verify multiple solutions against constraints.
 
         Args:

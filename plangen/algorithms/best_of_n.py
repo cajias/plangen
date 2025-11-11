@@ -1,5 +1,4 @@
-"""
-Best of N algorithm for PlanGEN.
+"""Best of N algorithm for PlanGEN.
 
 This module implements the Best of N algorithm, which generates multiple candidate
 solutions and selects the best one based on verification scores. The algorithm
@@ -23,17 +22,20 @@ Example:
     best_plan, score, metadata = algorithm.run(problem_statement)
     ```
 """
+from __future__ import annotations
 
 import concurrent.futures
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Any, Callable, ClassVar, Self
 
 import numpy as np
 
-from ..utils.llm_interface import LLMInterface
-from ..utils.template_loader import TemplateError, TemplateLoader
-from ..verification import BaseVerifier
+from plangen.utils.template_loader import TemplateLoader
+
 from .base_algorithm import BaseAlgorithm
 
+
+# Constants
+MIN_VALID_ALTERNATIVES = 2
 
 class BestOfN(BaseAlgorithm):
     """Implementation of the Best of N algorithm.
@@ -51,18 +53,16 @@ class BestOfN(BaseAlgorithm):
         domain: Optional domain name for domain-specific templates
     """
 
-    SAMPLING_STRATEGIES = ["basic", "diverse", "adaptive"]
+    SAMPLING_STRATEGIES: ClassVar[list[str]] = ["basic", "diverse", "adaptive"]
 
     def __init__(
-        self,
+        self: Self,
         n_plans: int = 3,
         sampling_strategy: str = "basic",
         parallel: bool = False,
-        min_similarity: float = 0.3,
-        max_retries: int = 5,
-        domain: Optional[str] = None,
-        **kwargs,
-    ):
+        domain: str | None = None,
+        **kwargs: object,
+    ) -> None:
         """Initialize the Best of N algorithm.
 
         Args:
@@ -72,10 +72,11 @@ class BestOfN(BaseAlgorithm):
                 - "diverse": Enforce diversity between plans
                 - "adaptive": Adjust sampling based on feedback
             parallel: Whether to generate plans in parallel
-            min_similarity: Minimum similarity threshold for diverse sampling
-            max_retries: Maximum number of retries for diverse sampling
             domain: Optional domain name for domain-specific templates
-            **kwargs: Additional arguments passed to BaseAlgorithm
+            **kwargs: Additional configuration options:
+                - min_similarity (float): Minimum similarity threshold (default: 0.3)
+                - max_retries (int): Maximum retries for diverse sampling (default: 5)
+                Additional arguments passed to BaseAlgorithm
 
         Raises:
             ValueError: If sampling_strategy is not recognized
@@ -83,22 +84,25 @@ class BestOfN(BaseAlgorithm):
         super().__init__(**kwargs)
 
         if sampling_strategy not in self.SAMPLING_STRATEGIES:
-            raise ValueError(
+            msg = (
                 f"Unknown sampling strategy: {sampling_strategy}. "
                 f"Must be one of {self.SAMPLING_STRATEGIES}"
+            )
+            raise ValueError(
+                msg,
             )
 
         self.n_plans = n_plans
         self.sampling_strategy = sampling_strategy
         self.parallel = parallel
-        self.min_similarity = min_similarity
-        self.max_retries = max_retries
+        self.min_similarity = float(kwargs.get("min_similarity", 0.3))
+        self.max_retries = int(kwargs.get("max_retries", 5))
         self.domain = domain
 
         # Initialize template loader
         self.template_loader = TemplateLoader()
 
-    def run(self, problem_statement: str) -> Tuple[str, float, Dict[str, Any]]:
+    def run(self: Self, problem_statement: str) -> tuple[str, float, dict[str, Any]]:
         """Run the Best of N algorithm on the given problem statement.
 
         Args:
@@ -112,12 +116,13 @@ class BestOfN(BaseAlgorithm):
             RuntimeError: If there's an error during algorithm execution
         """
         if not problem_statement.strip():
-            raise ValueError("Problem statement cannot be empty")
+            msg = "Problem statement cannot be empty"
+            raise ValueError(msg)
 
         try:
             # Extract constraints
             constraints = self.constraint_agent.run(problem_statement)
-            
+
             # Notify observers about algorithm start
             self.notify_observers(
                 {
@@ -127,7 +132,7 @@ class BestOfN(BaseAlgorithm):
                     "constraints": constraints,
                     "n_plans": self.n_plans,
                     "sampling_strategy": self.sampling_strategy,
-                }
+                },
             )
 
             # Select sampling function based on strategy
@@ -141,11 +146,11 @@ class BestOfN(BaseAlgorithm):
             # Generate and evaluate plans
             if self.parallel:
                 results = self._parallel_generate(
-                    problem_statement, constraints, sample_fn
+                    problem_statement, constraints, sample_fn,
                 )
             else:
                 results = self._sequential_generate(
-                    problem_statement, constraints, sample_fn
+                    problem_statement, constraints, sample_fn,
                 )
 
             plans, scores, feedbacks = zip(*results)
@@ -154,7 +159,7 @@ class BestOfN(BaseAlgorithm):
             best_idx = max(range(len(scores)), key=lambda i: scores[i])
             best_plan = plans[best_idx]
             best_score = scores[best_idx]
-            
+
             # Notify observers about the best plan selection
             self.notify_observers(
                 {
@@ -163,7 +168,7 @@ class BestOfN(BaseAlgorithm):
                     "best_plan_id": best_idx,
                     "best_plan": best_plan,
                     "best_score": best_score,
-                }
+                },
             )
 
             # Prepare metadata
@@ -179,7 +184,7 @@ class BestOfN(BaseAlgorithm):
                 "mean_score": np.mean(scores),
                 "std_score": np.std(scores),
             }
-            
+
             # Notify observers about algorithm completion
             self.notify_observers(
                 {
@@ -194,17 +199,17 @@ class BestOfN(BaseAlgorithm):
                         "mean_score": float(np.mean(scores)),
                         "std_score": float(np.std(scores)),
                     },
-                }
+                },
             )
-
+        except (RuntimeError, ValueError) as e:
+            msg = f"Error running Best of N algorithm: {e!s}"
+            raise RuntimeError(msg) from None
+        else:
             return best_plan, best_score, metadata
 
-        except Exception as e:
-            raise RuntimeError(f"Error running Best of N algorithm: {str(e)}")
-
     def _sequential_generate(
-        self, problem_statement: str, constraints: List[str], sample_fn: Callable
-    ) -> List[Tuple[str, float, str]]:
+        self: Self, problem_statement: str, constraints: list[str], sample_fn: Callable,
+    ) -> list[tuple[str, float, str]]:
         """Generate plans sequentially.
 
         Args:
@@ -224,9 +229,9 @@ class BestOfN(BaseAlgorithm):
                     "event": "plan_generation_start",
                     "plan_id": i,
                     "sampling_strategy": self.sampling_strategy,
-                }
+                },
             )
-            
+
             plan = sample_fn(
                 problem_statement,
                 constraints,
@@ -235,7 +240,7 @@ class BestOfN(BaseAlgorithm):
 
             feedback, score = self._verify_plan(problem_statement, constraints, plan)
             results.append((plan, score, feedback))
-            
+
             # Notify observers about plan generation completion
             self.notify_observers(
                 {
@@ -246,14 +251,14 @@ class BestOfN(BaseAlgorithm):
                     "score": score,
                     "verification": feedback,
                     "is_selected": False,  # Will be updated later if selected
-                }
+                },
             )
 
         return results
 
     def _parallel_generate(
-        self, problem_statement: str, constraints: List[str], sample_fn: Callable
-    ) -> List[Tuple[str, float, str]]:
+        self: Self, problem_statement: str, constraints: list[str], sample_fn: Callable,
+    ) -> list[tuple[str, float, str]]:
         """Generate plans in parallel.
 
         Args:
@@ -268,7 +273,7 @@ class BestOfN(BaseAlgorithm):
             futures = []
             results_so_far = []
 
-            for i in range(self.n_plans):
+            for _i in range(self.n_plans):
                 future = executor.submit(
                     self._generate_and_verify,
                     problem_statement,
@@ -284,20 +289,16 @@ class BestOfN(BaseAlgorithm):
                     results_so_far.append(result)
 
             # Wait for remaining futures if any
-            if self.sampling_strategy == "basic":
-                results = [f.result() for f in futures]
-            else:
-                results = results_so_far
+            return [f.result() for f in futures] if self.sampling_strategy == "basic" else results_so_far
 
-        return results
 
     def _generate_and_verify(
-        self,
+        self: Self,
         problem_statement: str,
-        constraints: List[str],
+        constraints: list[str],
         sample_fn: Callable,
-        previous_results: List[Tuple[str, float, str]],
-    ) -> Tuple[str, float, str]:
+        previous_results: list[tuple[str, float, str]],
+    ) -> tuple[str, float, str]:
         """Generate and verify a single plan.
 
         Args:
@@ -311,7 +312,7 @@ class BestOfN(BaseAlgorithm):
         """
         # Calculate plan_id based on number of previous results
         plan_id = len(previous_results)
-        
+
         # Notify observers about plan generation start
         self.notify_observers(
             {
@@ -319,12 +320,12 @@ class BestOfN(BaseAlgorithm):
                 "event": "plan_generation_start",
                 "plan_id": plan_id,
                 "sampling_strategy": self.sampling_strategy,
-            }
+            },
         )
-        
+
         plan = sample_fn(problem_statement, constraints, previous_results)
         feedback, score = self._verify_plan(problem_statement, constraints, plan)
-        
+
         # Notify observers about plan generation completion
         self.notify_observers(
             {
@@ -335,16 +336,16 @@ class BestOfN(BaseAlgorithm):
                 "score": score,
                 "verification": feedback,
                 "is_selected": False,  # Will be updated later if selected
-            }
+            },
         )
-        
+
         return plan, score, feedback
 
     def _basic_sampling(
-        self,
+        self: Self,
         problem_statement: str,
-        constraints: List[str],
-        previous_results: List[Tuple[str, float, str]],
+        constraints: list[str],
+        _previous_results: list[tuple[str, float, str]],
     ) -> str:
         """Basic sampling strategy - independent samples.
 
@@ -359,7 +360,7 @@ class BestOfN(BaseAlgorithm):
         try:
             # Get the template for basic plan generation
             template_path = self.template_loader.get_algorithm_template(
-                algorithm="best_of_n", template_type="plan", domain=self.domain
+                algorithm="best_of_n", template_type="plan", domain=self.domain,
             )
 
             # Render the template
@@ -371,22 +372,22 @@ class BestOfN(BaseAlgorithm):
                 },
             )
 
+        except (RuntimeError, ValueError, OSError):
+            # Template not found or rendering error, fall back to base implementation
+            return super()._generate_plan(
+                problem_statement, constraints, self.temperature,
+            )
+        else:
             # Generate the plan
             return self.llm_interface.generate(
-                prompt=prompt, temperature=self.temperature
-            )
-        except Exception as e:
-            # Log the error and fall back to base implementation
-            print(f"Error in basic sampling: {str(e)}")
-            return super()._generate_plan(
-                problem_statement, constraints, self.temperature
+                prompt=prompt, temperature=self.temperature,
             )
 
     def _diverse_sampling(
-        self,
+        self: Self,
         problem_statement: str,
-        constraints: List[str],
-        previous_results: List[Tuple[str, float, str]],
+        constraints: list[str],
+        previous_results: list[tuple[str, float, str]],
     ) -> str:
         """Diverse sampling strategy - enforces diversity between plans.
 
@@ -400,7 +401,7 @@ class BestOfN(BaseAlgorithm):
         """
         if not previous_results:
             return self._basic_sampling(
-                problem_statement, constraints, previous_results
+                problem_statement, constraints, previous_results,
             )
 
         previous_plans = [r[0] for r in previous_results]
@@ -408,7 +409,7 @@ class BestOfN(BaseAlgorithm):
         try:
             # Get the template for diverse plan generation
             template_path = self.template_loader.get_algorithm_template(
-                algorithm="best_of_n", template_type="diverse_plan", domain=self.domain
+                algorithm="best_of_n", template_type="diverse_plan", domain=self.domain,
             )
 
             # Render the template with existing plans
@@ -421,14 +422,8 @@ class BestOfN(BaseAlgorithm):
                 },
             )
 
-            # Generate with higher temperature for more diversity
-            return self.llm_interface.generate(
-                prompt=prompt,
-                temperature=self.temperature * (1 + len(previous_results) * 0.1),
-            )
-        except Exception as e:
-            # Log the error and fall back to base implementation
-            print(f"Error in diverse sampling: {str(e)}")
+        except (RuntimeError, ValueError, OSError):
+            # Template not found or rendering error, fall back to base implementation
             plan = super()._generate_plan(
                 problem_statement,
                 constraints,
@@ -438,17 +433,22 @@ class BestOfN(BaseAlgorithm):
             # Check similarity with previous plans
             if self._is_diverse_enough(plan, previous_plans):
                 return plan
-
-        # If we couldn't generate a diverse plan, return the last attempt
-        # This should never happen in practice as we're in the exception handler above
-        # but we need to have a valid fallback
-        return self._basic_sampling(problem_statement, constraints, [])
+            # If we couldn't generate a diverse plan, return the last attempt
+            # This should never happen in practice as we're in the exception handler above
+            # but we need to have a valid fallback
+            return self._basic_sampling(problem_statement, constraints, [])
+        else:
+            # Generate with higher temperature for more diversity
+            return self.llm_interface.generate(
+                prompt=prompt,
+                temperature=self.temperature * (1 + len(previous_results) * 0.1),
+            )
 
     def _adaptive_sampling(
-        self,
+        self: Self,
         problem_statement: str,
-        constraints: List[str],
-        previous_results: List[Tuple[str, float, str]],
+        constraints: list[str],
+        previous_results: list[tuple[str, float, str]],
     ) -> str:
         """Adaptive sampling strategy - learns from previous attempts.
 
@@ -462,13 +462,13 @@ class BestOfN(BaseAlgorithm):
         """
         if not previous_results:
             return self._basic_sampling(
-                problem_statement, constraints, previous_results
+                problem_statement, constraints, previous_results,
             )
 
         try:
             # Get the template for adaptive plan generation
             template_path = self.template_loader.get_algorithm_template(
-                algorithm="best_of_n", template_type="adaptive_plan", domain=self.domain
+                algorithm="best_of_n", template_type="adaptive_plan", domain=self.domain,
             )
 
             # Format previous plans with their feedback and scores
@@ -490,25 +490,23 @@ class BestOfN(BaseAlgorithm):
             prev_scores = [r[1] for r in previous_results]
             score_trend = (
                 np.mean(prev_scores[-2:]) - np.mean(prev_scores[:-2])
-                if len(prev_scores) > 2
+                if len(prev_scores) > MIN_VALID_ALTERNATIVES
                 else 0
             )
             adapted_temp = self.temperature * (
                 1 - score_trend * 0.1
             )  # Reduce temp if improving
 
+        except (RuntimeError, ValueError, OSError):
+            # Template not found or rendering error, fall back to diverse sampling
+            return self._diverse_sampling(
+                problem_statement, constraints, previous_results,
+            )
+        else:
             # Generate the plan
             return self.llm_interface.generate(prompt=prompt, temperature=adapted_temp)
-        except Exception as e:
-            # Log the error and fall back to base implementation
-            print(f"Error in adaptive sampling: {str(e)}")
 
-            # Fall back to diverse sampling if adaptive fails
-            return self._diverse_sampling(
-                problem_statement, constraints, previous_results
-            )
-
-    def _is_diverse_enough(self, plan: str, previous_plans: List[str]) -> bool:
+    def _is_diverse_enough(self: Self, plan: str, previous_plans: list[str]) -> bool:
         """Check if a plan is diverse enough from previous plans.
 
         Args:
@@ -531,10 +529,10 @@ class BestOfN(BaseAlgorithm):
         return True
 
     def _create_adaptive_prompt(
-        self,
+        self: Self,
         problem_statement: str,
-        constraints: List[str],
-        previous_results: List[Tuple[str, float, str]],
+        constraints: list[str],
+        previous_results: list[tuple[str, float, str]],
     ) -> str:
         """Create a prompt that incorporates insights from previous attempts.
 
@@ -579,7 +577,7 @@ class BestOfN(BaseAlgorithm):
         worst_plan, worst_score, worst_feedback = sorted_results[-1]
 
         # Create prompt with insights
-        prompt = (
+        return (
             "Based on previous attempts, consider these insights:\n"
             f"What worked well (score {best_score}):\n{best_feedback}\n"
             f"What didn't work (score {worst_score}):\n{worst_feedback}\n"
@@ -589,4 +587,3 @@ class BestOfN(BaseAlgorithm):
             "\n- Satisfies all original constraints"
         )
 
-        return prompt

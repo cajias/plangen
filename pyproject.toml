@@ -49,24 +49,43 @@ isort = "^5.12.0"
 mypy = "^1.5.0"
 pytest-cov = "^4.1.0"
 ruff = "^0.1.5"
+pylint = "^3.0.0"
 pip-audit = "^2.9.0"
+agentic-guardrails = {git = "https://github.com/cajias/agentic-guardrails.git", tag = "v1.0.1", subdirectory = "python"}
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
-[tool.black]
-line-length = 88
-target-version = ["py39"]
+# ==============================================================================
+# Linting and Code Quality Configuration
+# Base configs from: agentic-guardrails package (v1.0.1)
+# Source: https://github.com/cajias/agentic-guardrails
+#
+# The agentic-guardrails package provides canonical linting configurations.
+# All base rules come from the package. This file contains ONLY project-specific
+# overrides.
+#
+# To update base configs: poetry update agentic-guardrails
+# ==============================================================================
 
-[tool.isort]
-profile = "black"
-line_length = 88
-
+# Ruff configuration - extends from agentic-guardrails package
 [tool.ruff]
-target-version = "py39"
-line-length = 88
+extend = ".venv/lib/python3.11/site-packages/lint_configs/ruff.toml"
 
-[tool.ruff.lint]
-select = ["E", "F", "I", "W"]
-ignore = []
+# Project-specific overrides
+[tool.ruff.lint.isort]
+known-first-party = ["plangen"]
+
+# Project-specific MyPy overrides for third-party libraries
+[[tool.mypy.overrides]]
+module = [
+    "langgraph.*",
+    "networkx.*",
+    "matplotlib.*",
+]
+ignore_missing_imports = true
+
+# Project-specific Coverage source configuration
+[tool.coverage.run]
+source = ["plangen"]
