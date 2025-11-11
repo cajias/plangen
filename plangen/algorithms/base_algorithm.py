@@ -1,10 +1,8 @@
-"""
-Base Algorithm class for PlanGEN
-"""
+"""Base Algorithm class for PlanGEN."""
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, Self
 
 from plangen.agents.constraint_agent import ConstraintAgent
 from plangen.agents.verification_agent import VerificationAgent
@@ -16,13 +14,11 @@ class BaseAlgorithm(ABC, Observable):
     """Base class for all PlanGEN algorithms."""
 
     def __init__(
-        self,
+        self: Self,
         llm_interface: LLMInterface | None = None,
         constraint_agent: ConstraintAgent | None = None,
         verification_agent: VerificationAgent | None = None,
-        model_name: str = "gpt-4o",
-        temperature: float = 0.7,
-        max_iterations: int = 5,
+        **kwargs: object,
     ) -> None:
         """Initialize the base algorithm.
 
@@ -30,12 +26,18 @@ class BaseAlgorithm(ABC, Observable):
             llm_interface: Optional LLM interface to use
             constraint_agent: Optional constraint agent to use
             verification_agent: Optional verification agent to use
-            model_name: Name of the model to use if llm_interface is not provided
-            temperature: Temperature for LLM generation
-            max_iterations: Maximum number of iterations for the algorithm
+            **kwargs: Additional configuration options:
+                - model_name (str): Name of the model (default: "gpt-4o")
+                - temperature (float): Temperature for LLM generation (default: 0.7)
+                - max_iterations (int): Maximum iterations (default: 5)
         """
         # Initialize Observable
         Observable.__init__(self)
+
+        # Extract kwargs with defaults
+        model_name = str(kwargs.get("model_name", "gpt-4o"))
+        temperature = float(kwargs.get("temperature", 0.7))
+        max_iterations = int(kwargs.get("max_iterations", 5))
 
         self.llm_interface = llm_interface or LLMInterface(
             model_name=model_name,
@@ -63,7 +65,7 @@ class BaseAlgorithm(ABC, Observable):
         )
 
     @abstractmethod
-    def run(self, problem_statement: str) -> tuple[str, float, dict[str, Any]]:
+    def run(self: Self, problem_statement: str) -> tuple[str, float, dict[str, Any]]:
         """Run the algorithm on the given problem statement.
 
         Args:
@@ -78,7 +80,7 @@ class BaseAlgorithm(ABC, Observable):
         """
 
     def _generate_plan(
-        self,
+        self: Self,
         problem_statement: str,
         constraints: list[str],
         temperature: float | None = None,
@@ -109,7 +111,7 @@ class BaseAlgorithm(ABC, Observable):
         )
 
     def _verify_plan(
-        self, problem_statement: str, constraints: list[str], plan: str,
+        self: Self, problem_statement: str, constraints: list[str], plan: str,
     ) -> tuple[str, float]:
         """Verify a plan against constraints and provide a reward score.
 

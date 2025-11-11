@@ -1,5 +1,4 @@
-"""
-Tree of Thought algorithm for PlanGEN.
+"""Tree of Thought algorithm for PlanGEN.
 
 This module implements the Tree of Thought algorithm, which explores multiple reasoning
 paths in a tree structure, allowing for backtracking and exploration of alternatives.
@@ -25,7 +24,7 @@ Example:
 """
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Self
 
 from plangen.utils.template_loader import TemplateLoader
 
@@ -46,12 +45,12 @@ class TreeOfThought(BaseAlgorithm):
     """
 
     def __init__(
-        self,
+        self: Self,
         branching_factor: int = 3,
         max_depth: int = 5,
         beam_width: int = 2,
         domain: str | None = None,
-        **kwargs,
+        **kwargs: object,
     ) -> None:
         """Initialize the Tree of Thought algorithm.
 
@@ -71,7 +70,7 @@ class TreeOfThought(BaseAlgorithm):
         # Initialize template loader
         self.template_loader = TemplateLoader()
 
-    def run(self, problem_statement: str) -> tuple[str, float, dict[str, Any]]:
+    def run(self: Self, problem_statement: str) -> tuple[str, float, dict[str, Any]]:
         """Run the Tree of Thought algorithm on the given problem statement.
 
         Args:
@@ -120,73 +119,32 @@ class TreeOfThought(BaseAlgorithm):
 
                 # Check if the current plan is complete
                 if self._is_complete(problem_statement, node["steps"]):
-                    node["complete"] = True
-
-                    # Evaluate the complete plan
-                    plan_text = "\n".join(node["steps"])
-                    feedback, score = self._verify_plan(
-                        problem_statement, constraints, plan_text,
+                    result = self._process_complete_node(
+                        node,
+                        {"node_id": node_id, "depth": depth},
+                        {"problem_statement": problem_statement, "constraints": constraints},
                     )
-
-                    # Update the best plan if needed
-                    if score > best_score:
-                        best_plan = plan_text
-                        best_score = score
-
-                    # Add to all paths
-                    path_info = {
-                        "id": f"complete_{node_id}_{depth}",
-                        "parent_id": node_id,
-                        "steps": node["steps"],
-                        "score": score,
-                        "feedback": feedback,
-                        "depth": depth,
-                        "complete": True,
-                    }
-                    all_paths.append(path_info)
-                    depth_nodes.append(path_info)
-
-                    # Add to next beam to keep this complete solution
-                    node["score"] = score  # Update with actual score
-                    next_beam.append(node)
+                    if result["score"] > best_score:
+                        best_plan = result["plan_text"]
+                        best_score = result["score"]
+                    all_paths.append(result["path_info"])
+                    depth_nodes.append(result["path_info"])
+                    next_beam.append(result["node"])
                     continue
 
-                # Generate branching_factor next steps
-                next_steps = self._generate_next_steps(
-                    problem_statement, node["steps"], self.branching_factor,
+                # Process incomplete node - generate and evaluate next steps
+                new_nodes = self._process_incomplete_node(
+                    node,
+                    {"node_id": node_id, "depth": depth},
+                    {
+                        "problem_statement": problem_statement,
+                        "constraints": constraints,
+                        "formatted_constraints": formatted_constraints,
+                    },
                 )
-
-                # Evaluate each next step
-                for i, next_step in enumerate(next_steps):
-                    new_steps = node["steps"] + [next_step]
-                    new_plan_text = "\n".join(new_steps)
-
-                    # Evaluate the new plan
-                    step_feedback, step_score = self._evaluate_step(
-                        problem_statement,
-                        constraints,
-                        formatted_constraints,
-                        new_plan_text,
-                    )
-
-                    # Create a new node
-                    new_node_id = f"node_{node_id}_{depth}_{i}"
-                    new_node = {
-                        "id": new_node_id,
-                        "parent_id": node_id,
-                        "steps": new_steps,
-                        "score": step_score,
-                        "depth": depth + 1,
-                        "complete": False,
-                        "feedback": step_feedback,
-                    }
-
-                    # Add to next beam
-                    next_beam.append(new_node)
-
-                    # Add to all paths and depth nodes
-                    all_paths.append(new_node)
-                    depth_nodes.append(new_node)
+                next_beam.extend(new_nodes)
+                all_paths.extend(new_nodes)
+                depth_nodes.extend(new_nodes)
 
             # Notify observers about the new depth exploration
             self.notify_observers(
@@ -283,7 +241,7 @@ class TreeOfThought(BaseAlgorithm):
         return best_plan, best_score, metadata
 
     def _generate_next_steps(
-        self, problem_statement: str, intermediate_steps: list[str], num_steps: int,
+        self: Self, problem_statement: str, intermediate_steps: list[str], num_steps: int,
     ) -> list[str]:
         """Generate next steps for the current plan using the step prompt.
 
@@ -329,9 +287,9 @@ class TreeOfThought(BaseAlgorithm):
         return next_steps
 
     def _evaluate_step(
-        self,
+        self: Self,
         problem_statement: str,
-        constraints: list[str],
+        _constraints: list[str],
         formatted_constraints: str,
         plan: str,
     ) -> tuple[str, float]:
@@ -379,7 +337,7 @@ class TreeOfThought(BaseAlgorithm):
 
         return feedback, score
 
-    def _is_complete(self, problem_statement: str, steps: list[str]) -> bool:
+    def _is_complete(self: Self, problem_statement: str, steps: list[str]) -> bool:
         """Check if the current plan is complete using the completion prompt.
 
         Args:
@@ -415,3 +373,97 @@ class TreeOfThought(BaseAlgorithm):
 
         # Check if the response indicates completion
         return response.strip() == "1"
+
+    def _process_complete_node(
+        self: Self,
+        node: dict[str, Any],
+        node_info: dict[str, Any],
+        context: dict[str, Any],
+    ) -> dict[str, Any]:
+        """Process a complete node by evaluating it.
+
+        Args:
+            node: The complete node
+            node_info: Dict with node_id and depth
+            context: Dict with problem_statement and constraints
+
+        Returns:
+            Dictionary with node, path_info, plan_text, and score
+        """
+        node_id = str(node_info["node_id"])
+        depth = int(node_info["depth"])
+        problem_statement = str(context["problem_statement"])
+        constraints = list(context["constraints"])  # type: ignore[arg-type]
+
+        node["complete"] = True
+        plan_text = "\n".join(node["steps"])
+        feedback, score = self._verify_plan(problem_statement, constraints, plan_text)
+
+        path_info = {
+            "id": f"complete_{node_id}_{depth}",
+            "parent_id": node_id,
+            "steps": node["steps"],
+            "score": score,
+            "feedback": feedback,
+            "depth": depth,
+            "complete": True,
+        }
+
+        node["score"] = score
+        return {
+            "node": node,
+            "path_info": path_info,
+            "plan_text": plan_text,
+            "score": score,
+        }
+
+    def _process_incomplete_node(
+        self: Self,
+        node: dict[str, Any],
+        node_info: dict[str, Any],
+        context: dict[str, Any],
+    ) -> list[dict[str, Any]]:
+        """Process an incomplete node by generating and evaluating next steps.
+
+        Args:
+            node: The incomplete node
+            node_info: Dict with node_id and depth
+            context: Dict with problem_statement, constraints, formatted_constraints
+
+        Returns:
+            List of new nodes
+        """
+        node_id = str(node_info["node_id"])
+        depth = int(node_info["depth"])
+        problem_statement = str(context["problem_statement"])
+        constraints = list(context["constraints"])  # type: ignore[arg-type]
+        formatted_constraints = str(context["formatted_constraints"])
+
+        new_nodes = []
+        next_steps = self._generate_next_steps(
+            problem_statement, node["steps"], self.branching_factor,
+        )
+
+        for i, next_step in enumerate(next_steps):
+            new_steps = node["steps"] + [next_step]
+            new_plan_text = "\n".join(new_steps)
+
+            step_feedback, step_score = self._evaluate_step(
+                problem_statement,
+                constraints,
+                formatted_constraints,
+                new_plan_text,
+            )
+
+            new_node = {
+                "id": f"node_{node_id}_{depth}_{i}",
+                "parent_id": node_id,
+                "steps": new_steps,
+                "score": step_score,
+                "depth": depth + 1,
+                "complete": False,
+                "feedback": step_feedback,
+            }
+            new_nodes.append(new_node)
+
+        return new_nodes

@@ -1,7 +1,7 @@
-"""
-Solution agent for PlanGEN
-"""
+"""Solution agent for PlanGEN."""
 
+
+from typing import Self
 
 from plangen.models import BaseModelInterface
 from plangen.prompts import PromptManager
@@ -11,7 +11,7 @@ class SolutionAgent:
     """Agent for generating solutions based on constraints."""
 
     def __init__(
-        self,
+        self: Self,
         model: BaseModelInterface,
         prompt_manager: PromptManager,
     ) -> None:
@@ -25,7 +25,7 @@ class SolutionAgent:
         self.prompt_manager = prompt_manager
 
     def generate_solutions(
-        self, problem: str, constraints: str, num_solutions: int = 3,
+        self: Self, problem: str, constraints: str, num_solutions: int = 3,
     ) -> list[str]:
         """Generate multiple solutions for a problem.
 
@@ -41,7 +41,8 @@ class SolutionAgent:
         # Use constraint system message as fallback if solution system message doesn't exist
         try:
             system_message = self.prompt_manager.get_system_message("solution")
-        except:
+        except KeyError:
+            # Fallback to constraint system message if solution message doesn't exist
             system_message = self.prompt_manager.get_system_message("constraint")
 
         prompt_template = self.prompt_manager.get_prompt(

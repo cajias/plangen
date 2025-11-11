@@ -1,8 +1,8 @@
-"""
-Upper Confidence Bound (UCB) implementation for PlanGEN
-"""
+"""Upper Confidence Bound (UCB) implementation for PlanGEN."""
+from __future__ import annotations
 
 import math
+from typing import Self
 
 
 class UCB:
@@ -13,7 +13,7 @@ class UCB:
     Precise regret and adaptive inference"
     """
 
-    def __init__(self, algorithm_names: list[str], exploration_weight: float = 2.0) -> None:
+    def __init__(self: Self, algorithm_names: list[str], exploration_weight: float = 2.0) -> None:
         """Initialize the UCB algorithm.
 
         Args:
@@ -28,7 +28,7 @@ class UCB:
         self.values = dict.fromkeys(algorithm_names, 0.0)
         self.total_pulls = 0
 
-    def select_algorithm(self) -> str:
+    def select_algorithm(self: Self) -> str:
         """Select the next algorithm to try based on UCB scores.
 
         Returns:
@@ -51,7 +51,7 @@ class UCB:
         # Return the algorithm with the highest UCB score
         return max(ucb_scores.items(), key=lambda x: x[1])[0]
 
-    def update(self, algorithm: str, reward: float) -> None:
+    def update(self: Self, algorithm: str, reward: float) -> None:
         """Update the UCB algorithm with the reward from the selected algorithm.
 
         Args:
@@ -66,7 +66,7 @@ class UCB:
         value = self.values[algorithm]
         self.values[algorithm] = ((n - 1) / n) * value + (1 / n) * reward
 
-    def get_best_algorithm(self) -> str:
+    def get_best_algorithm(self: Self) -> str:
         """Get the algorithm with the highest average reward.
 
         Returns:
@@ -74,7 +74,7 @@ class UCB:
         """
         return max(self.values.items(), key=lambda x: x[1])[0]
 
-    def get_ucb_scores(self) -> dict[str, float]:
+    def get_ucb_scores(self: Self) -> dict[str, float]:
         """Get the current UCB scores for all algorithms.
 
         Returns:

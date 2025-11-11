@@ -1,17 +1,19 @@
-"""
-Constraint agent for PlanGEN
-"""
+"""Constraint agent for PlanGEN."""
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Self
 
 
-from plangen.models import BaseModelInterface
-from plangen.prompts import PromptManager
+if TYPE_CHECKING:
+    from plangen.models import BaseModelInterface
+    from plangen.prompts import PromptManager
 
 
 class ConstraintAgent:
     """Agent for extracting constraints from problem statements."""
 
     def __init__(
-        self,
+        self: Self,
         model: BaseModelInterface,
         prompt_manager: PromptManager,
     ) -> None:
@@ -24,7 +26,7 @@ class ConstraintAgent:
         self.model = model
         self.prompt_manager = prompt_manager
 
-    def extract_constraints(self, problem: str) -> str:
+    def extract_constraints(self: Self, problem: str) -> str:
         """Extract constraints from a problem statement.
 
         Args:

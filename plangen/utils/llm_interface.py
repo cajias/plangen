@@ -1,16 +1,15 @@
-"""
-LLM Interface for PlanGEN
-"""
+"""LLM Interface for PlanGEN."""
 from __future__ import annotations
 
 import os
+from typing import Self
 
 
 class LLMInterface:
     """Interface for interacting with LLMs."""
 
     def __init__(
-        self,
+        self: Self,
         model_name: str = "gpt-4o",
         temperature: float = 0.7,
         max_tokens: int = 1024,
@@ -39,7 +38,7 @@ class LLMInterface:
             msg = f"Unsupported model: {model_name}"
             raise ValueError(msg)
 
-    def _setup_openai(self, api_key: str | None = None) -> None:
+    def _setup_openai(self: Self, api_key: str | None = None) -> None:
         """Set up the OpenAI client.
 
         Args:
@@ -54,11 +53,9 @@ class LLMInterface:
             self.provider = "openai"
         except ImportError:
             msg = "OpenAI package not installed. Install it with 'pip install openai'."
-            raise ImportError(
-                msg,
-            )
+            raise ImportError(msg) from None
 
-    def _setup_anthropic(self, api_key: str | None = None) -> None:
+    def _setup_anthropic(self: Self, api_key: str | None = None) -> None:
         """Set up the Anthropic client.
 
         Args:
@@ -73,11 +70,9 @@ class LLMInterface:
             self.provider = "anthropic"
         except ImportError:
             msg = "Anthropic package not installed. Install it with 'pip install anthropic'."
-            raise ImportError(
-                msg,
-            )
+            raise ImportError(msg) from None
 
-    def _setup_google(self, api_key: str | None = None) -> None:
+    def _setup_google(self: Self, api_key: str | None = None) -> None:
         """Set up the Google client.
 
         Args:
@@ -91,12 +86,10 @@ class LLMInterface:
             self.provider = "google"
         except ImportError:
             msg = "Google Generative AI package not installed. Install it with 'pip install google-generativeai'."
-            raise ImportError(
-                msg,
-            )
+            raise ImportError(msg) from None
 
     def generate(
-        self,
+        self: Self,
         prompt: str,
         system_message: str | None = None,
         temperature: float | None = None,
@@ -123,10 +116,10 @@ class LLMInterface:
         if self.provider == "google":
             return self._generate_google(prompt, system_message, temp, tokens)
         msg = f"Unsupported provider: {self.provider}"
-        raise ValueError(msg)
+        raise ValueError(msg) from None
 
     def _generate_openai(
-        self,
+        self: Self,
         prompt: str,
         system_message: str | None = None,
         temperature: float = 0.7,
@@ -160,7 +153,7 @@ class LLMInterface:
         return response.choices[0].message.content
 
     def _generate_anthropic(
-        self,
+        self: Self,
         prompt: str,
         system_message: str | None = None,
         temperature: float = 0.7,
@@ -194,7 +187,7 @@ class LLMInterface:
         return response.content[0].text
 
     def _generate_google(
-        self,
+        self: Self,
         prompt: str,
         system_message: str | None = None,
         temperature: float = 0.7,
@@ -225,7 +218,7 @@ class LLMInterface:
         return response.text
 
     def batch_generate(
-        self,
+        self: Self,
         prompts: list[str],
         system_message: str | None = None,
         temperature: float | None = None,

@@ -1,9 +1,8 @@
-"""
-AWS Bedrock model interface
-"""
+"""AWS Bedrock model interface."""
 from __future__ import annotations
 
 import json
+from typing import Self
 
 import boto3
 
@@ -14,7 +13,7 @@ class BedrockModelInterface(BaseModelInterface):
     """Interface for AWS Bedrock models."""
 
     def __init__(
-        self,
+        self: Self,
         model_id: str = "anthropic.claude-3-sonnet-20240229-v1:0",
         temperature: float = 0.7,
         max_tokens: int = 1024,
@@ -35,7 +34,7 @@ class BedrockModelInterface(BaseModelInterface):
         # Initialize Bedrock client
         self.client = boto3.client("bedrock-runtime", region_name=region or "us-east-1")
 
-    def generate(self, prompt: str, system_message: str | None = None) -> str:
+    def generate(self: Self, prompt: str, system_message: str | None = None) -> str:
         """Generate text using the Bedrock model.
 
         Args:
@@ -54,7 +53,7 @@ class BedrockModelInterface(BaseModelInterface):
         raise ValueError(msg)
 
     def batch_generate(
-        self, prompts: list[str], system_message: str | None = None,
+        self: Self, prompts: list[str], system_message: str | None = None,
     ) -> list[str]:
         """Generate text for multiple prompts.
 
@@ -68,7 +67,7 @@ class BedrockModelInterface(BaseModelInterface):
         return [self.generate(prompt, system_message) for prompt in prompts]
 
     def _generate_anthropic(
-        self, prompt: str, system_message: str | None = None,
+        self: Self, prompt: str, system_message: str | None = None,
     ) -> str:
         """Generate text using Anthropic Claude models.
 
@@ -109,7 +108,7 @@ class BedrockModelInterface(BaseModelInterface):
         return response_body["content"][0]["text"]
 
     def _generate_amazon(
-        self, prompt: str, system_message: str | None = None,
+        self: Self, prompt: str, system_message: str | None = None,
     ) -> str:
         """Generate text using Amazon Titan models.
 

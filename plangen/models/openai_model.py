@@ -1,9 +1,8 @@
-"""
-OpenAI model interface for PlanGEN
-"""
+"""OpenAI model interface for PlanGEN."""
 from __future__ import annotations
 
 import os
+from typing import Self
 
 from openai import OpenAI
 from tenacity import retry, stop_after_attempt, wait_random_exponential
@@ -15,7 +14,7 @@ class OpenAIModelInterface(BaseModelInterface):
     """Interface for interacting with OpenAI models."""
 
     def __init__(
-        self,
+        self: Self,
         model_name: str = "gpt-4o",
         api_key: str | None = None,
         temperature: float = 0.7,
@@ -45,7 +44,7 @@ class OpenAIModelInterface(BaseModelInterface):
 
     @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(6))
     def generate(
-        self,
+        self: Self,
         prompt: str,
         system_message: str | None = None,
         temperature: float | None = None,
@@ -79,7 +78,7 @@ class OpenAIModelInterface(BaseModelInterface):
         return response.choices[0].message.content
 
     def batch_generate(
-        self,
+        self: Self,
         prompts: list[str],
         system_message: str | None = None,
         temperature: float | None = None,

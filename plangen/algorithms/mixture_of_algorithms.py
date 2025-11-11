@@ -1,5 +1,4 @@
-"""
-Mixture of Algorithms for PlanGEN.
+"""Mixture of Algorithms for PlanGEN.
 
 This module implements the Mixture of Algorithms approach, which dynamically selects
 the best inference algorithm based on the problem's complexity and characteristics.
@@ -23,7 +22,7 @@ Example:
 """
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Self
 
 from plangen.agents.selection_agent import SelectionAgent
 from plangen.utils.template_loader import TemplateLoader
@@ -49,11 +48,11 @@ class MixtureOfAlgorithms(BaseAlgorithm, PlanObserver):
     """
 
     def __init__(
-        self,
+        self: Self,
         selection_agent: SelectionAgent | None = None,
         max_algorithm_switches: int = 2,
         domain: str | None = None,
-        **kwargs,
+        **kwargs: object,
     ) -> None:
         """Initialize the Mixture of Algorithms approach.
 
@@ -99,7 +98,7 @@ class MixtureOfAlgorithms(BaseAlgorithm, PlanObserver):
         # Initialize template loader
         self.template_loader = TemplateLoader()
 
-    def run(self, problem_statement: str) -> tuple[str, float, dict[str, Any]]:
+    def run(self: Self, problem_statement: str) -> tuple[str, float, dict[str, Any]]:
         """Run the Mixture of Algorithms approach on the given problem statement.
 
         Args:
@@ -113,7 +112,7 @@ class MixtureOfAlgorithms(BaseAlgorithm, PlanObserver):
         "\n".join(
             [f"- {constraint}" for constraint in constraints],
         )
-        
+
         # Notify observers about algorithm start
         self.notify_observers(
             {
@@ -128,7 +127,7 @@ class MixtureOfAlgorithms(BaseAlgorithm, PlanObserver):
         # Select initial algorithm
         current_algorithm_name = self._select_algorithm(problem_statement, constraints)
         current_algorithm = self.algorithms[current_algorithm_name]
-        
+
         # Notify observers about algorithm selection
         self.notify_observers(
             {
@@ -151,7 +150,7 @@ class MixtureOfAlgorithms(BaseAlgorithm, PlanObserver):
         current_plan, current_score, current_metadata = current_algorithm.run(
             problem_statement,
         )
-        
+
         # Notify observers about algorithm completion
         self.notify_observers(
             {
@@ -180,9 +179,11 @@ class MixtureOfAlgorithms(BaseAlgorithm, PlanObserver):
             next_algorithm_name = self._select_next_algorithm(
                 problem_statement,
                 constraints,
-                current_plan,
-                current_score,
-                current_algorithm_name,
+                {
+                    "current_plan": current_plan,
+                    "current_score": current_score,
+                    "current_algorithm": current_algorithm_name,
+                },
             )
 
             # If same algorithm selected, we're done
@@ -202,7 +203,7 @@ class MixtureOfAlgorithms(BaseAlgorithm, PlanObserver):
             current_algorithm_name = next_algorithm_name
             current_algorithm = self.algorithms[current_algorithm_name]
             algorithm_history.append(current_algorithm_name)
-            
+
             # Notify observers about algorithm switch
             self.notify_observers(
                 {
@@ -219,7 +220,7 @@ class MixtureOfAlgorithms(BaseAlgorithm, PlanObserver):
             next_plan, next_score, next_metadata = current_algorithm.run(
                 problem_statement,
             )
-            
+
             # Notify observers about algorithm completion
             self.notify_observers(
                 {
@@ -247,7 +248,7 @@ class MixtureOfAlgorithms(BaseAlgorithm, PlanObserver):
                 current_plan = next_plan
                 current_score = next_score
                 current_metadata = next_metadata
-                
+
                 # Notify observers about better plan found
                 self.notify_observers(
                     {
@@ -268,7 +269,7 @@ class MixtureOfAlgorithms(BaseAlgorithm, PlanObserver):
             "iterations": iterations,
             "constraints": constraints,
         }
-        
+
         # Notify observers about algorithm completion
         self.notify_observers(
             {
@@ -284,7 +285,7 @@ class MixtureOfAlgorithms(BaseAlgorithm, PlanObserver):
 
         return current_plan, current_score, metadata
 
-    def _select_algorithm(self, problem_statement: str, constraints: list[str]) -> str:
+    def _select_algorithm(self: Self, problem_statement: str, constraints: list[str]) -> str:
         """Select an algorithm based on the problem statement and constraints.
 
         Args:
@@ -328,25 +329,26 @@ class MixtureOfAlgorithms(BaseAlgorithm, PlanObserver):
         return "Best of N"
 
     def _select_next_algorithm(
-        self,
+        self: Self,
         problem_statement: str,
         constraints: list[str],
-        current_plan: str,
-        current_score: float,
-        current_algorithm: str,
+        current_state: dict[str, Any],
     ) -> str:
         """Select the next algorithm based on current results.
 
         Args:
             problem_statement: The problem statement to solve
             constraints: List of constraints
-            current_plan: Current plan
-            current_score: Current score
-            current_algorithm: Current algorithm name
+            current_state: Dictionary containing current_plan, current_score, current_algorithm
 
         Returns:
             Name of the next algorithm to try
         """
+        # Extract current state
+        current_plan = str(current_state["current_plan"])
+        current_score = float(current_state["current_score"])
+        current_algorithm = str(current_state["current_algorithm"])
+
         # Get the template path
         template_path = self.template_loader.get_algorithm_template(
             algorithm="mixture_of_algorithms",
@@ -382,20 +384,20 @@ class MixtureOfAlgorithms(BaseAlgorithm, PlanObserver):
 
         # Default to current algorithm if no new algorithm is found
         return current_algorithm
-        
-    def update(self, plan_data: dict[str, Any]) -> None:
+
+    def update(self: Self, plan_data: dict[str, Any]) -> None:
         """Receive updates from child algorithms and delegate to observers.
-        
+
         This method implements the PlanObserver interface to receive updates
         from child algorithms. It adds the current algorithm context and
         forwards the updates to this algorithm's observers.
-        
+
         Args:
             plan_data: Dictionary containing updated plan information
         """
         # Get the current running algorithm
         algorithm_type = plan_data.get("algorithm_type")
-        
+
         if algorithm_type:
             # Add context about the mixture of algorithms and forward to observers
             delegated_data = {
@@ -404,6 +406,6 @@ class MixtureOfAlgorithms(BaseAlgorithm, PlanObserver):
                 "delegated_algorithm": algorithm_type,
                 "algorithm_data": plan_data,
             }
-            
+
             # Notify our observers with the delegated data
             self.notify_observers(delegated_data)

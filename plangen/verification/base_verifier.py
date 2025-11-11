@@ -1,9 +1,7 @@
-"""
-Base verifier interface for domain-agnostic verification.
-"""
+"""Base verifier interface for domain-agnostic verification."""
 
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, Self
 
 
 class BaseVerifier(ABC):
@@ -16,7 +14,7 @@ class BaseVerifier(ABC):
 
     @abstractmethod
     def verify_solution(
-        self, problem_statement: str, solution: str, constraints: list[str],
+        self: Self, problem_statement: str, solution: str, constraints: list[str],
     ) -> dict[str, Any]:
         """Verify if a solution satisfies the constraints for a given problem.
 
@@ -33,7 +31,7 @@ class BaseVerifier(ABC):
         """
 
     @abstractmethod
-    def is_applicable(self, problem_statement: str) -> bool:
+    def is_applicable(self: Self, problem_statement: str) -> bool:
         """Check if this verifier is applicable to the given problem.
 
         Args:
@@ -45,7 +43,7 @@ class BaseVerifier(ABC):
 
     @abstractmethod
     def extract_domain_constraints(
-        self, problem_statement: str, general_constraints: list[str],
+        self: Self, problem_statement: str, general_constraints: list[str],
     ) -> list[str]:
         """Extract domain-specific constraints from the problem statement.
 

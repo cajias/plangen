@@ -1,5 +1,4 @@
-"""
-Template loader for PlanGEN.
+"""Template loader for PlanGEN.
 
 This module provides functionality for loading and rendering templates used by
 PlanGEN algorithms and agents.
@@ -7,7 +6,7 @@ PlanGEN algorithms and agents.
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any
+from typing import Any, Self
 
 from jinja2 import Environment, FileSystemLoader, TemplateNotFound, select_autoescape
 
@@ -29,7 +28,7 @@ class TemplateLoader:
         env: Jinja2 environment for template rendering
     """
 
-    def __init__(self, template_dir: str | None = None) -> None:
+    def __init__(self: Self, template_dir: str | None = None) -> None:
         """Initialize the template loader.
 
         Args:
@@ -51,7 +50,7 @@ class TemplateLoader:
         )
 
     def get_algorithm_template(
-        self, algorithm: str, template_type: str, domain: str | None = None,
+        self: Self, algorithm: str, template_type: str, domain: str | None = None,
     ) -> str:
         """Get the path to a template for a specific algorithm.
 
@@ -95,7 +94,7 @@ class TemplateLoader:
             msg,
         )
 
-    def render_template(self, template_path: str, variables: dict[str, Any]) -> str:
+    def render_template(self: Self, template_path: str, variables: dict[str, Any]) -> str:
         """Render a template with the given variables.
 
         Args:
@@ -110,10 +109,11 @@ class TemplateLoader:
         """
         try:
             template = self.env.get_template(template_path)
-            return template.render(**variables)
         except TemplateNotFound:
             msg = f"Template not found: {template_path}"
-            raise TemplateError(msg)
-        except Exception as e:
+            raise TemplateError(msg) from None
+        except (OSError, ValueError) as e:
             msg = f"Error rendering template: {e!s}"
-            raise TemplateError(msg)
+            raise TemplateError(msg) from None
+        else:
+            return template.render(**variables)

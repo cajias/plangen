@@ -1,18 +1,15 @@
-"""
-Prompt manager for PlanGEN
-"""
+"""Prompt manager for PlanGEN."""
 from __future__ import annotations
 
-import os
-from typing import Any
+from pathlib import Path
+from typing import Self
 
 import jinja2
 
 
 class PromptManager:
     """Manager for loading and rendering prompt templates."""
-
-    def __init__(self, templates_dir: str | None = None) -> None:
+    def __init__(self: Self, templates_dir: str | None = None) -> None:
         """Initialize the prompt manager.
 
         Args:
@@ -20,13 +17,14 @@ class PromptManager:
         """
         if templates_dir is None:
             # Use default templates directory
-            templates_dir = os.path.join(os.path.dirname(__file__), "templates")
+            templates_dir = Path(Path(__file__).parent) / "templates"
 
         self.templates_dir = templates_dir
 
         # Set up Jinja2 environment
         self.env = jinja2.Environment(
             loader=jinja2.FileSystemLoader(self.templates_dir),
+            autoescape=True,
             trim_blocks=True,
             lstrip_blocks=True,
         )
@@ -34,7 +32,7 @@ class PromptManager:
         # Store custom prompts
         self.custom_prompts = {}
 
-    def render(self, template_name: str, **kwargs: Any) -> str:
+    def render(self: Self, template_name: str, **kwargs: object) -> str:
         """Render a prompt template with the given variables.
 
         Args:
@@ -53,7 +51,7 @@ class PromptManager:
         template = self.env.get_template(f"{template_name}.j2")
         return template.render(**kwargs)
 
-    def get_system_message(self, agent_type: str) -> str:
+    def get_system_message(self: Self, agent_type: str) -> str:
         """Get the system message for a specific agent type.
 
         Args:
@@ -64,7 +62,7 @@ class PromptManager:
         """
         return self.render(f"system_{agent_type}")
 
-    def get_prompt(self, prompt_type: str, **kwargs: Any) -> str:
+    def get_prompt(self: Self, prompt_type: str, **kwargs: object) -> str:
         """Get a rendered prompt of a specific type.
 
         Args:
@@ -76,7 +74,7 @@ class PromptManager:
         """
         return self.render(prompt_type, **kwargs)
 
-    def update_prompt(self, prompt_name: str, prompt_text: str) -> None:
+    def update_prompt(self: Self, prompt_name: str, prompt_text: str) -> None:
         """Update or add a custom prompt template.
 
         Args:

@@ -1,5 +1,4 @@
-"""
-Public API for the PlanGEN framework.
+"""Public API for the PlanGEN framework.
 
 This module provides a clean, well-documented public interface for using the PlanGEN
 framework. It is designed to be intuitive and easy to use, hiding the complexity
@@ -7,7 +6,16 @@ of the underlying implementation.
 """
 from __future__ import annotations
 
-from typing import Any, Callable, Protocol
+from typing import TYPE_CHECKING, Any, Callable, Protocol, Self
+
+
+if TYPE_CHECKING:
+    from plangen.algorithms.base_algorithm import BaseAlgorithm
+    from plangen.plangen import PlanGEN
+
+
+# Constants
+DEFAULT_SCORE_THRESHOLD = 0.5
 
 # Type definitions for better code readability
 PlanType = str
@@ -23,7 +31,7 @@ class ModelProtocol(Protocol):
     """Protocol for model interfaces."""
 
     def generate(
-        self,
+        self: Self,
         prompt: str,
         system_message: str | None = None,
         temperature: float | None = None,
@@ -43,7 +51,7 @@ class ModelProtocol(Protocol):
         ...
 
     def batch_generate(
-        self,
+        self: Self,
         prompts: list[str],
         system_message: str | None = None,
         temperature: float | None = None,
@@ -68,7 +76,7 @@ class VerifierProtocol(Protocol):
     """Protocol for verifiers."""
 
     def verify(
-        self,
+        self: Self,
         problem: str,
         constraints: list[ConstraintType],
         plan: PlanType,
@@ -100,12 +108,12 @@ class PlanGen:
 
     @classmethod
     def create(
-        cls,
+        cls: type[Self],
         model: str | None = "gpt-4o",
         temperature: float = 0.7,
         max_tokens: int | None = None,
         api_key: str | None = None,
-        **kwargs,
+        **kwargs: object,
     ) -> PlanGen:
         """Create a new PlanGen instance with simplified configuration.
 
@@ -145,7 +153,7 @@ class PlanGen:
         return cls(plangen_instance)
 
     @classmethod
-    def with_model(cls, model: ModelProtocol) -> PlanGen:
+    def with_model(cls: type[Self], model: ModelProtocol) -> PlanGen:
         """Create a PlanGen instance with a custom model implementation.
 
         Args:
@@ -167,10 +175,10 @@ class PlanGen:
 
     @classmethod
     def with_openai(
-        cls,
+        cls: type[Self],
         model_name: str = "gpt-4o",
         api_key: str | None = None,
-        **kwargs,
+        **kwargs: object,
     ) -> PlanGen:
         """Create a PlanGen instance with OpenAI model.
 
@@ -203,10 +211,10 @@ class PlanGen:
 
     @classmethod
     def with_bedrock(
-        cls,
+        cls: type[Self],
         model_id: str = "anthropic.claude-3-sonnet-20240229-v1:0",
         region: str = "us-east-1",
-        **kwargs,
+        **kwargs: object,
     ) -> PlanGen:
         """Create a PlanGen instance with AWS Bedrock model.
 
@@ -237,7 +245,7 @@ class PlanGen:
 
         return cls(plangen_instance)
 
-    def __init__(self, plangen_instance) -> None:
+    def __init__(self: Self, plangen_instance: PlanGEN) -> None:
         """Initialize a PlanGen instance with a PlanGEN instance.
 
         Args:
@@ -246,11 +254,11 @@ class PlanGen:
         self._plangen = plangen_instance
 
     def solve(
-        self,
+        self: Self,
         problem: str,
         algorithm: str = "default",
-        verifier: VerifierProtocol | None = None,
-        **algorithm_params,
+        _verifier: VerifierProtocol | None = None,
+        **algorithm_params: object,
     ) -> dict[str, Any]:
         """Solve a problem using the PlanGEN workflow.
 
@@ -295,10 +303,10 @@ class PlanGen:
         return self._plangen.solve(problem)
 
     def generate_plan(
-        self,
+        self: Self,
         problem: str,
         constraints: list[str] | None = None,
-        **kwargs,
+        **kwargs: object,
     ) -> str:
         """Generate a single plan for the given problem.
 
@@ -320,7 +328,7 @@ class PlanGen:
         )[0]
 
 
-    def extract_constraints(self, problem: str) -> list[str]:
+    def extract_constraints(self: Self, problem: str) -> list[str]:
         """Extract constraints from a problem statement.
 
         Args:
@@ -332,7 +340,7 @@ class PlanGen:
         return self._plangen.constraint_agent.extract_constraints(problem)
 
     def verify_plan(
-        self,
+        self: Self,
         problem: str,
         plan: str,
         constraints: list[str] | None = None,
@@ -374,11 +382,11 @@ class Algorithm:
 
     @classmethod
     def create(
-        cls,
+        cls: type[Self],
         algorithm_type: str,
         model: ModelProtocol | None = None,
-        verifier: VerifierProtocol | None = None,
-        **kwargs,
+        _verifier: VerifierProtocol | None = None,
+        **kwargs: object,
     ) -> Algorithm:
         """Create an algorithm instance.
 
@@ -451,7 +459,7 @@ class Algorithm:
         # Wrap the algorithm instance
         return cls(algorithm_instance)
 
-    def __init__(self, algorithm_instance) -> None:
+    def __init__(self: Self, algorithm_instance: BaseAlgorithm) -> None:
         """Initialize an Algorithm instance with an algorithm instance.
 
         Args:
@@ -459,7 +467,7 @@ class Algorithm:
         """
         self._algorithm = algorithm_instance
 
-    def run(self, problem: str) -> PlanResultType:
+    def run(self: Self, problem: str) -> PlanResultType:
         """Run the algorithm on the given problem.
 
         Args:
@@ -476,11 +484,11 @@ class Visualization:
 
     @classmethod
     def create_graph(
-        cls,
+        cls: type[Self],
         result: dict[str, Any],
         output_format: str = "png",
         output_path: str | None = None,
-        **kwargs,
+        **kwargs: object,
     ) -> str:
         """Create a visual graph of the planning process.
 
@@ -513,10 +521,10 @@ class Visualization:
 
     @classmethod
     def render_to_html(
-        cls,
+        cls: type[Self],
         result: dict[str, Any],
         output_path: str | None = None,
-        **kwargs,
+        **kwargs: object,
     ) -> str:
         """Render the planning process as an interactive HTML visualization.
 
@@ -540,7 +548,7 @@ class Verifiers:
     """Factory for domain-specific verifiers."""
 
     @classmethod
-    def create(cls, verifier_type: str, **kwargs) -> VerifierProtocol:
+    def create(cls: type[Self], verifier_type: str, **kwargs: object) -> VerifierProtocol:
         """Create a verifier for a specific domain.
 
         Args:
@@ -558,7 +566,7 @@ class Verifiers:
         raise ValueError(msg)
 
     @classmethod
-    def calendar(cls, **kwargs) -> VerifierProtocol:
+    def calendar(cls: type[Self], **kwargs: object) -> VerifierProtocol:
         """Create a calendar scheduling verifier.
 
         Args:
@@ -572,7 +580,7 @@ class Verifiers:
         return CalendarVerifier(**kwargs)
 
     @classmethod
-    def math(cls, **kwargs) -> VerifierProtocol:
+    def math(cls: type[Self], **kwargs: object) -> VerifierProtocol:
         """Create a math problem verifier.
 
         Args:
@@ -586,7 +594,7 @@ class Verifiers:
         return MathVerifier(**kwargs)
 
     @classmethod
-    def custom(cls, verify_function: Callable, **kwargs) -> VerifierProtocol:
+    def custom(cls: type[Self], verify_function: Callable, **kwargs: object) -> VerifierProtocol:
         """Create a custom verifier with a function.
 
         Args:
@@ -600,28 +608,28 @@ class Verifiers:
 
         class CustomVerifier(BaseVerifier):
             def verify_solution(
-                self, problem_statement: str, solution: str, constraints: list[str],
+                self: Self, problem_statement: str, solution: str, constraints: list[str],
             ) -> dict[str, Any]:
                 # Call the user's verify function and adapt to the expected interface
                 feedback, score = verify_function(problem_statement, constraints, solution)
                 return {
-                    "is_valid": score > 0.5,
+                    "is_valid": score > DEFAULT_SCORE_THRESHOLD,
                     "score": score * 100,
                     "reason": feedback,
                 }
 
-            def is_applicable(self, problem_statement: str) -> bool:
+            def is_applicable(self: Self, _problem_statement: str) -> bool:
                 # Custom verifiers are always applicable
                 return True
 
             def extract_domain_constraints(
-                self, problem_statement: str, general_constraints: list[str],
+                self: Self, _problem_statement: str, _general_constraints: list[str],
             ) -> list[str]:
                 # Custom verifiers don't extract additional constraints
                 return []
 
             def verify(
-                self, problem: str, constraints: list[str], plan: str,
+                self: Self, problem: str, constraints: list[str], plan: str,
             ) -> tuple[str, float]:
                 # Support the VerifierProtocol interface
                 return verify_function(problem, constraints, plan)

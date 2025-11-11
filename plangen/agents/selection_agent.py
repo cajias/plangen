@@ -1,8 +1,6 @@
-"""
-Selection agent for PlanGEN
-"""
+"""Selection agent for PlanGEN."""
 
-from typing import Any
+from typing import Any, Self
 
 from pydantic import BaseModel, Field
 
@@ -21,7 +19,7 @@ class SelectionAgent:
     """Agent for selecting the best solution based on verification results."""
 
     def __init__(
-        self,
+        self: Self,
         model: BaseModelInterface,
         prompt_manager: PromptManager,
     ) -> None:
@@ -35,7 +33,7 @@ class SelectionAgent:
         self.prompt_manager = prompt_manager
 
     def select_best_solution(
-        self, solutions: list[str], verification_results: list[str],
+        self: Self, solutions: list[str], verification_results: list[str],
     ) -> dict[str, Any]:
         """Select the best solution based on verification results.
 

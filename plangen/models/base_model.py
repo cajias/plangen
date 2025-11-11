@@ -1,9 +1,8 @@
-"""
-Base model interface for PlanGEN
-"""
+"""Base model interface for PlanGEN."""
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from typing import Self
 
 
 class BaseModelInterface(ABC):
@@ -11,7 +10,7 @@ class BaseModelInterface(ABC):
 
     @abstractmethod
     def generate(
-        self,
+        self: Self,
         prompt: str,
         system_message: str | None = None,
         temperature: float | None = None,
@@ -31,7 +30,7 @@ class BaseModelInterface(ABC):
 
     @abstractmethod
     def batch_generate(
-        self,
+        self: Self,
         prompts: list[str],
         system_message: str | None = None,
         temperature: float | None = None,

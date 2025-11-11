@@ -1,5 +1,4 @@
-"""
-REBASE algorithm for PlanGEN.
+"""REBASE algorithm for PlanGEN.
 
 This module implements the REBASE algorithm, which uses a recursive refinement
 approach to generate and improve plans. The algorithm supports domain-specific
@@ -24,7 +23,7 @@ Example:
 """
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Self
 
 from plangen.utils.template_loader import TemplateLoader
 
@@ -44,11 +43,11 @@ class REBASE(BaseAlgorithm):
     """
 
     def __init__(
-        self,
+        self: Self,
         max_iterations: int = 5,
         improvement_threshold: float = 0.1,
         domain: str | None = None,
-        **kwargs,
+        **kwargs: object,
     ) -> None:
         """Initialize the REBASE algorithm.
 
@@ -66,7 +65,7 @@ class REBASE(BaseAlgorithm):
         # Initialize template loader
         self.template_loader = TemplateLoader()
 
-    def run(self, problem_statement: str) -> tuple[str, float, dict[str, Any]]:
+    def run(self: Self, problem_statement: str) -> tuple[str, float, dict[str, Any]]:
         """Run the REBASE algorithm on the given problem statement.
 
         Args:
@@ -80,7 +79,7 @@ class REBASE(BaseAlgorithm):
         formatted_constraints = "\n".join(
             [f"- {constraint}" for constraint in constraints],
         )
-        
+
         # Notify observers about algorithm start
         self.notify_observers(
             {
@@ -103,7 +102,7 @@ class REBASE(BaseAlgorithm):
         iterations = [
             {"plan": current_plan, "score": current_score, "feedback": current_feedback},
         ]
-        
+
         # Notify observers about initial plan
         self.notify_observers(
             {
@@ -136,7 +135,7 @@ class REBASE(BaseAlgorithm):
                     "feedback": refined_feedback,
                 },
             )
-            
+
             # Notify observers about refined plan
             self.notify_observers(
                 {
@@ -178,7 +177,7 @@ class REBASE(BaseAlgorithm):
             "iterations": iterations,
             "constraints": constraints,
         }
-        
+
         # Notify observers about algorithm completion
         self.notify_observers(
             {
@@ -197,7 +196,7 @@ class REBASE(BaseAlgorithm):
         return current_plan, current_score, metadata
 
     def _generate_initial_plan(
-        self, problem_statement: str, formatted_constraints: str,
+        self: Self, problem_statement: str, formatted_constraints: str,
     ) -> str:
         """Generate an initial plan using the initial plan template.
 
@@ -226,7 +225,7 @@ class REBASE(BaseAlgorithm):
         return self.llm_interface.generate(prompt=prompt).strip()
 
     def _refine_plan(
-        self,
+        self: Self,
         problem_statement: str,
         formatted_constraints: str,
         current_plan: str,
@@ -263,7 +262,7 @@ class REBASE(BaseAlgorithm):
         return self.llm_interface.generate(prompt=prompt).strip()
 
     def _verify_plan(
-        self, problem_statement: str, constraints: list[str], plan: str,
+        self: Self, problem_statement: str, constraints: list[str], plan: str,
     ) -> tuple[str, float]:
         """Verify a plan using the verification template.
 
@@ -318,18 +317,17 @@ class REBASE(BaseAlgorithm):
                     import re
 
                     numbers = re.findall(r"\d+", response)
-                    if numbers:
-                        score = float(numbers[-1])  # Use the last number found
-                    else:
-                        score = 50  # Default score if no number found
+                    score = float(numbers[-1]) if numbers else 50
 
                 # Ensure score is in 0-100 range
                 score = max(0, min(100, score))
-
-                return response, score
-            except Exception:
+            except (ValueError, IndexError):
                 # Return a default score if parsing fails
-                return response, 50
-        except Exception as e:
+                score = 50
+            else:
+                return response, score
+        except (RuntimeError, ValueError, OSError) as e:
             msg = f"Error verifying plan: {e!s}"
-            raise ValueError(msg)
+            raise ValueError(msg) from None
+        else:
+            return response, score
