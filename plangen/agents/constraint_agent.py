@@ -2,10 +2,9 @@
 Constraint agent for PlanGEN
 """
 
-from typing import Any, Dict, List, Optional
 
-from ..models import BaseModelInterface
-from ..prompts import PromptManager
+from plangen.models import BaseModelInterface
+from plangen.prompts import PromptManager
 
 
 class ConstraintAgent:
@@ -15,7 +14,7 @@ class ConstraintAgent:
         self,
         model: BaseModelInterface,
         prompt_manager: PromptManager,
-    ):
+    ) -> None:
         """Initialize the constraint agent.
 
         Args:
@@ -37,10 +36,9 @@ class ConstraintAgent:
         # Get the system message and prompt template
         system_message = self.prompt_manager.get_system_message("constraint")
         prompt = self.prompt_manager.get_prompt(
-            "constraint_extraction", problem=problem
+            "constraint_extraction", problem=problem,
         )
 
         # Generate constraints using the model
-        constraints = self.model.generate(prompt, system_message=system_message)
+        return self.model.generate(prompt, system_message=system_message)
 
-        return constraints

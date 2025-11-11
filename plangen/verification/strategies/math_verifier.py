@@ -1,11 +1,12 @@
 """
 Math problem verification strategy.
 """
+from __future__ import annotations
 
 import re
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
-from ..base_verifier import BaseVerifier
+from plangen.verification.base_verifier import BaseVerifier
 
 
 class MathVerifier(BaseVerifier):
@@ -15,7 +16,7 @@ class MathVerifier(BaseVerifier):
     validating calculation steps, and ensuring mathematical correctness.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the math verifier."""
         self.domain_keywords = [
             "calculate",
@@ -55,14 +56,11 @@ class MathVerifier(BaseVerifier):
                 return True
 
         # Check for numerical patterns
-        if re.search(r"\d+\s*[\+\-\*/\=]\s*\d+", problem_statement):
-            return True
-
-        return False
+        return bool(re.search(r"\d+\s*[\+\-\*/\=]\s*\d+", problem_statement))
 
     def verify_solution(
-        self, problem_statement: str, solution: str, constraints: List[str]
-    ) -> Dict[str, Any]:
+        self, problem_statement: str, solution: str, constraints: list[str],
+    ) -> dict[str, Any]:
         """Verify if a solution satisfies the constraints for a math problem.
 
         Args:
@@ -112,8 +110,8 @@ class MathVerifier(BaseVerifier):
         }
 
     def extract_domain_constraints(
-        self, problem_statement: str, general_constraints: List[str]
-    ) -> List[str]:
+        self, problem_statement: str, general_constraints: list[str],
+    ) -> list[str]:
         """Extract math-specific constraints from the problem statement.
 
         Args:
@@ -135,7 +133,7 @@ class MathVerifier(BaseVerifier):
 
         return domain_constraints
 
-    def _extract_numerical_answer(self, solution: str) -> Optional[float]:
+    def _extract_numerical_answer(self, solution: str) -> float | None:
         """Extract numerical answer from solution.
 
         Args:
@@ -161,7 +159,7 @@ class MathVerifier(BaseVerifier):
 
         return None
 
-    def _extract_expected_answer(self, problem_statement: str) -> Optional[float]:
+    def _extract_expected_answer(self, problem_statement: str) -> float | None:
         """Extract expected answer from problem statement if available.
 
         Args:
@@ -186,7 +184,7 @@ class MathVerifier(BaseVerifier):
 
         return None
 
-    def _validate_calculation_steps(self, solution: str) -> Tuple[bool, str]:
+    def _validate_calculation_steps(self, solution: str) -> tuple[bool, str]:
         """Validate calculation steps in the solution.
 
         Args:
@@ -207,15 +205,14 @@ class MathVerifier(BaseVerifier):
 
         if has_calculations and has_steps:
             return True, "Solution contains valid calculation steps"
-        elif has_calculations:
+        if has_calculations:
             return True, "Solution contains calculations but limited steps"
-        elif has_steps:
+        if has_steps:
             return False, "Solution has steps but no clear calculations"
-        else:
-            return False, "Solution lacks both steps and calculations"
+        return False, "Solution lacks both steps and calculations"
 
     def _compare_answers(
-        self, answer: float, expected: float, tolerance: float = 0.001
+        self, answer: float, expected: float, tolerance: float = 0.001,
     ) -> bool:
         """Compare actual answer with expected answer within tolerance.
 
@@ -229,7 +226,7 @@ class MathVerifier(BaseVerifier):
         """
         return abs(answer - expected) <= tolerance
 
-    def _extract_numerical_constraints(self, problem_statement: str) -> List[str]:
+    def _extract_numerical_constraints(self, problem_statement: str) -> list[str]:
         """Extract numerical constraints from the problem statement.
 
         Args:
@@ -255,12 +252,12 @@ class MathVerifier(BaseVerifier):
         if match:
             precision = match.group(1)
             constraints.append(
-                f"The answer must be rounded to {precision} decimal places."
+                f"The answer must be rounded to {precision} decimal places.",
             )
 
         return constraints
 
-    def _extract_operation_constraints(self, problem_statement: str) -> List[str]:
+    def _extract_operation_constraints(self, problem_statement: str) -> list[str]:
         """Extract operation constraints from the problem statement.
 
         Args:

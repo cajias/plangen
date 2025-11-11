@@ -1,11 +1,10 @@
 """
 OpenAI model interface for PlanGEN
 """
+from __future__ import annotations
 
 import os
-from typing import Any, Dict, List, Optional
 
-import openai
 from openai import OpenAI
 from tenacity import retry, stop_after_attempt, wait_random_exponential
 
@@ -18,10 +17,10 @@ class OpenAIModelInterface(BaseModelInterface):
     def __init__(
         self,
         model_name: str = "gpt-4o",
-        api_key: Optional[str] = None,
+        api_key: str | None = None,
         temperature: float = 0.7,
         max_tokens: int = 1024,
-    ):
+    ) -> None:
         """Initialize the OpenAI model interface.
 
         Args:
@@ -37,8 +36,9 @@ class OpenAIModelInterface(BaseModelInterface):
         # Use provided API key or get from environment
         self.api_key = api_key or os.environ.get("OPENAI_API_KEY")
         if not self.api_key:
+            msg = "API key must be provided or set as OPENAI_API_KEY environment variable"
             raise ValueError(
-                "API key must be provided or set as OPENAI_API_KEY environment variable"
+                msg,
             )
 
         self.client = OpenAI(api_key=self.api_key)
@@ -47,9 +47,9 @@ class OpenAIModelInterface(BaseModelInterface):
     def generate(
         self,
         prompt: str,
-        system_message: Optional[str] = None,
-        temperature: Optional[float] = None,
-        max_tokens: Optional[int] = None,
+        system_message: str | None = None,
+        temperature: float | None = None,
+        max_tokens: int | None = None,
     ) -> str:
         """Generate text from the OpenAI model.
 
@@ -80,11 +80,11 @@ class OpenAIModelInterface(BaseModelInterface):
 
     def batch_generate(
         self,
-        prompts: List[str],
-        system_message: Optional[str] = None,
-        temperature: Optional[float] = None,
-        max_tokens: Optional[int] = None,
-    ) -> List[str]:
+        prompts: list[str],
+        system_message: str | None = None,
+        temperature: float | None = None,
+        max_tokens: int | None = None,
+    ) -> list[str]:
         """Generate multiple responses from the OpenAI model.
 
         Args:

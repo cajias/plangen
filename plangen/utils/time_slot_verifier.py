@@ -1,10 +1,10 @@
 """
 Time slot verification utilities for calendar scheduling problems.
 """
+from __future__ import annotations
 
 import re
 from dataclasses import dataclass
-from typing import List, Optional, Tuple, Union
 
 
 @dataclass
@@ -15,7 +15,7 @@ class TimeSlot:
     end: int  # Minutes since midnight
 
     @classmethod
-    def from_str(cls, time_str: str) -> Optional["TimeSlot"]:
+    def from_str(cls, time_str: str) -> TimeSlot | None:
         """Create a TimeSlot from a string like '9:30-10:00'.
 
         Args:
@@ -49,7 +49,7 @@ class TimeSlot:
 
         return f"{start_hour}:{start_min:02d}-{end_hour}:{end_min:02d}"
 
-    def overlaps(self, other: "TimeSlot") -> bool:
+    def overlaps(self, other: TimeSlot) -> bool:
         """Check if this time slot overlaps with another.
 
         Args:
@@ -73,18 +73,18 @@ class TimeSlot:
 class TimeSlotVerifier:
     """Utility for verifying time slots in calendar scheduling problems."""
 
-    def __init__(self, day_start: int = 9 * 60, day_end: int = 17 * 60):
+    def __init__(self, day_start: int = 9 * 60, day_end: int = 17 * 60) -> None:
         """Initialize the time slot verifier.
 
         Args:
             day_start: Start of day in minutes since midnight (default: 9:00)
             day_end: End of day in minutes since midnight (default: 17:00)
         """
-        self.busy_slots: List[TimeSlot] = []
+        self.busy_slots: list[TimeSlot] = []
         self.day_start = day_start
         self.day_end = day_end
 
-    def add_busy_slot(self, slot: Union[str, TimeSlot]) -> bool:
+    def add_busy_slot(self, slot: str | TimeSlot) -> bool:
         """Add a busy time slot.
 
         Args:
@@ -104,8 +104,8 @@ class TimeSlotVerifier:
         return True
 
     def is_valid_meeting_slot(
-        self, slot: Union[str, TimeSlot], duration: Optional[int] = None
-    ) -> Tuple[bool, str]:
+        self, slot: str | TimeSlot, duration: int | None = None,
+    ) -> tuple[bool, str]:
         """Check if a time slot is valid for a meeting.
 
         Args:
@@ -146,7 +146,7 @@ class TimeSlotVerifier:
 
         return True, "Valid meeting slot"
 
-    def find_earliest_slot(self, duration: int = 30) -> Optional[TimeSlot]:
+    def find_earliest_slot(self, duration: int = 30) -> TimeSlot | None:
         """Find the earliest available time slot of the given duration.
 
         Args:

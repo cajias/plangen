@@ -1,11 +1,12 @@
 """
 Base Agent class for PlanGEN
 """
+from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional
+from typing import Any
 
-from ..utils.llm_interface import LLMInterface
+from plangen.utils.llm_interface import LLMInterface
 
 
 class BaseAgent(ABC):
@@ -13,11 +14,11 @@ class BaseAgent(ABC):
 
     def __init__(
         self,
-        llm_interface: Optional[LLMInterface] = None,
+        llm_interface: LLMInterface | None = None,
         model_name: str = "gpt-4o",
         temperature: float = 0.7,
-        system_message: Optional[str] = None,
-    ):
+        system_message: str | None = None,
+    ) -> None:
         """Initialize the base agent.
 
         Args:
@@ -38,7 +39,6 @@ class BaseAgent(ABC):
 
         This method should be implemented by all subclasses.
         """
-        pass
 
     def _generate_prompt(self, template: str, **kwargs) -> str:
         """Generate a prompt from a template.
@@ -55,8 +55,8 @@ class BaseAgent(ABC):
     def _call_llm(
         self,
         prompt: str,
-        temperature: Optional[float] = None,
-        max_tokens: Optional[int] = None,
+        temperature: float | None = None,
+        max_tokens: int | None = None,
     ) -> str:
         """Call the LLM with the given prompt.
 

@@ -7,4 +7,4 @@ from .template_loader import TemplateLoader
 from .time_slot_verifier import TimeSlot, TimeSlotVerifier
 from .ucb import UCB
 
-__all__ = ["LLMInterface", "UCB", "TimeSlot", "TimeSlotVerifier", "TemplateLoader"]
+__all__ = ["UCB", "LLMInterface", "TemplateLoader", "TimeSlot", "TimeSlotVerifier"]

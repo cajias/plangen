@@ -22,13 +22,12 @@ Example:
     best_plan, score, metadata = algorithm.run(problem_statement)
     ```
 """
+from __future__ import annotations
 
-import copy
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
-from ..utils.llm_interface import LLMInterface
-from ..utils.template_loader import TemplateLoader
-from ..verification import BaseVerifier
+from plangen.utils.template_loader import TemplateLoader
+
 from .base_algorithm import BaseAlgorithm
 
 
@@ -48,9 +47,9 @@ class REBASE(BaseAlgorithm):
         self,
         max_iterations: int = 5,
         improvement_threshold: float = 0.1,
-        domain: Optional[str] = None,
+        domain: str | None = None,
         **kwargs,
-    ):
+    ) -> None:
         """Initialize the REBASE algorithm.
 
         Args:
@@ -67,7 +66,7 @@ class REBASE(BaseAlgorithm):
         # Initialize template loader
         self.template_loader = TemplateLoader()
 
-    def run(self, problem_statement: str) -> Tuple[str, float, Dict[str, Any]]:
+    def run(self, problem_statement: str) -> tuple[str, float, dict[str, Any]]:
         """Run the REBASE algorithm on the given problem statement.
 
         Args:
@@ -79,7 +78,7 @@ class REBASE(BaseAlgorithm):
         # Extract constraints
         constraints = self.constraint_agent.run(problem_statement)
         formatted_constraints = "\n".join(
-            [f"- {constraint}" for constraint in constraints]
+            [f"- {constraint}" for constraint in constraints],
         )
         
         # Notify observers about algorithm start
@@ -89,20 +88,20 @@ class REBASE(BaseAlgorithm):
                 "event": "algorithm_start",
                 "problem_statement": problem_statement,
                 "constraints": constraints,
-            }
+            },
         )
 
         # Generate initial plan
         current_plan = self._generate_initial_plan(
-            problem_statement, formatted_constraints
+            problem_statement, formatted_constraints,
         )
         current_feedback, current_score = self._verify_plan(
-            problem_statement, constraints, current_plan
+            problem_statement, constraints, current_plan,
         )
 
         # Track all iterations for metadata
         iterations = [
-            {"plan": current_plan, "score": current_score, "feedback": current_feedback}
+            {"plan": current_plan, "score": current_score, "feedback": current_feedback},
         ]
         
         # Notify observers about initial plan
@@ -114,19 +113,19 @@ class REBASE(BaseAlgorithm):
                 "plan": current_plan,
                 "score": current_score,
                 "feedback": current_feedback,
-            }
+            },
         )
 
         # Iteratively refine the plan
         for iteration in range(self.max_iterations):
             # Generate refined plan
             refined_plan = self._refine_plan(
-                problem_statement, formatted_constraints, current_plan, current_feedback
+                problem_statement, formatted_constraints, current_plan, current_feedback,
             )
 
             # Verify refined plan
             refined_feedback, refined_score = self._verify_plan(
-                problem_statement, constraints, refined_plan
+                problem_statement, constraints, refined_plan,
             )
 
             # Track iteration
@@ -135,7 +134,7 @@ class REBASE(BaseAlgorithm):
                     "plan": refined_plan,
                     "score": refined_score,
                     "feedback": refined_feedback,
-                }
+                },
             )
             
             # Notify observers about refined plan
@@ -149,7 +148,7 @@ class REBASE(BaseAlgorithm):
                     "feedback": refined_feedback,
                     "previous_score": current_score,
                     "improvement": refined_score - current_score,
-                }
+                },
             )
 
             # Check if improvement is significant
@@ -162,7 +161,7 @@ class REBASE(BaseAlgorithm):
                         "reason": "insufficient_improvement",
                         "improvement": refined_score - current_score,
                         "threshold": self.improvement_threshold,
-                    }
+                    },
                 )
                 break
 
@@ -192,13 +191,13 @@ class REBASE(BaseAlgorithm):
                     "max_iterations": self.max_iterations,
                     "improvement_threshold": self.improvement_threshold,
                 },
-            }
+            },
         )
 
         return current_plan, current_score, metadata
 
     def _generate_initial_plan(
-        self, problem_statement: str, formatted_constraints: str
+        self, problem_statement: str, formatted_constraints: str,
     ) -> str:
         """Generate an initial plan using the initial plan template.
 
@@ -211,7 +210,7 @@ class REBASE(BaseAlgorithm):
         """
         # Get the template path
         template_path = self.template_loader.get_algorithm_template(
-            algorithm="rebase", template_type="initial_plan", domain=self.domain
+            algorithm="rebase", template_type="initial_plan", domain=self.domain,
         )
 
         # Render the template
@@ -246,7 +245,7 @@ class REBASE(BaseAlgorithm):
         """
         # Get the template path
         template_path = self.template_loader.get_algorithm_template(
-            algorithm="rebase", template_type="refinement", domain=self.domain
+            algorithm="rebase", template_type="refinement", domain=self.domain,
         )
 
         # Render the template
@@ -264,8 +263,8 @@ class REBASE(BaseAlgorithm):
         return self.llm_interface.generate(prompt=prompt).strip()
 
     def _verify_plan(
-        self, problem_statement: str, constraints: List[str], plan: str
-    ) -> Tuple[str, float]:
+        self, problem_statement: str, constraints: list[str], plan: str,
+    ) -> tuple[str, float]:
         """Verify a plan using the verification template.
 
         Args:
@@ -279,12 +278,12 @@ class REBASE(BaseAlgorithm):
         try:
             # Format constraints as a string
             formatted_constraints = "\n".join(
-                [f"- {constraint}" for constraint in constraints]
+                [f"- {constraint}" for constraint in constraints],
             )
 
             # Get the template path
             template_path = self.template_loader.get_algorithm_template(
-                algorithm="rebase", template_type="verification", domain=self.domain
+                algorithm="rebase", template_type="verification", domain=self.domain,
             )
 
             # Render the template
@@ -328,9 +327,9 @@ class REBASE(BaseAlgorithm):
                 score = max(0, min(100, score))
 
                 return response, score
-            except Exception as e:
-                print(f"Error parsing verification score: {str(e)}")
+            except Exception:
                 # Return a default score if parsing fails
                 return response, 50
         except Exception as e:
-            raise ValueError(f"Error verifying plan: {str(e)}")
+            msg = f"Error verifying plan: {e!s}"
+            raise ValueError(msg)

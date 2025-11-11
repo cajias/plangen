@@ -23,16 +23,12 @@ Example:
     best_plan, score, metadata = algorithm.run(problem_statement)
     ```
 """
+from __future__ import annotations
 
-import copy
-import heapq
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
-import numpy as np
+from plangen.utils.template_loader import TemplateLoader
 
-from ..utils.llm_interface import LLMInterface
-from ..utils.template_loader import TemplateLoader
-from ..verification import BaseVerifier
 from .base_algorithm import BaseAlgorithm
 
 
@@ -54,9 +50,9 @@ class TreeOfThought(BaseAlgorithm):
         branching_factor: int = 3,
         max_depth: int = 5,
         beam_width: int = 2,
-        domain: Optional[str] = None,
+        domain: str | None = None,
         **kwargs,
-    ):
+    ) -> None:
         """Initialize the Tree of Thought algorithm.
 
         Args:
@@ -75,7 +71,7 @@ class TreeOfThought(BaseAlgorithm):
         # Initialize template loader
         self.template_loader = TemplateLoader()
 
-    def run(self, problem_statement: str) -> Tuple[str, float, Dict[str, Any]]:
+    def run(self, problem_statement: str) -> tuple[str, float, dict[str, Any]]:
         """Run the Tree of Thought algorithm on the given problem statement.
 
         Args:
@@ -87,7 +83,7 @@ class TreeOfThought(BaseAlgorithm):
         # Extract constraints
         constraints = self.constraint_agent.run(problem_statement)
         formatted_constraints = "\n".join(
-            [f"- {constraint}" for constraint in constraints]
+            [f"- {constraint}" for constraint in constraints],
         )
 
         # Initialize the tree with a root node
@@ -111,7 +107,7 @@ class TreeOfThought(BaseAlgorithm):
                 "problem_statement": problem_statement,
                 "constraints": constraints,
                 "new_nodes": [root],
-            }
+            },
         )
 
         # Explore the tree up to max_depth
@@ -129,7 +125,7 @@ class TreeOfThought(BaseAlgorithm):
                     # Evaluate the complete plan
                     plan_text = "\n".join(node["steps"])
                     feedback, score = self._verify_plan(
-                        problem_statement, constraints, plan_text
+                        problem_statement, constraints, plan_text,
                     )
 
                     # Update the best plan if needed
@@ -157,7 +153,7 @@ class TreeOfThought(BaseAlgorithm):
 
                 # Generate branching_factor next steps
                 next_steps = self._generate_next_steps(
-                    problem_statement, node["steps"], self.branching_factor
+                    problem_statement, node["steps"], self.branching_factor,
                 )
 
                 # Evaluate each next step
@@ -199,7 +195,7 @@ class TreeOfThought(BaseAlgorithm):
                     "event": "depth_exploration",
                     "depth": depth,
                     "new_nodes": depth_nodes,
-                }
+                },
             )
 
             # If we have any complete solutions, prioritize them
@@ -219,7 +215,7 @@ class TreeOfThought(BaseAlgorithm):
                         "algorithm_type": "TreeOfThought",
                         "event": "complete_solution_found",
                         "solution": best_complete,
-                    }
+                    },
                 )
 
                 # We can stop here as we found a complete solution
@@ -236,7 +232,7 @@ class TreeOfThought(BaseAlgorithm):
                     "event": "beam_update",
                     "depth": depth,
                     "beam": beam,
-                }
+                },
             )
 
             # If all paths in the beam are complete, we can stop
@@ -255,7 +251,7 @@ class TreeOfThought(BaseAlgorithm):
                     "algorithm_type": "TreeOfThought",
                     "event": "incomplete_solution_selected",
                     "solution": best_node,
-                }
+                },
             )
 
         # Prepare metadata
@@ -281,14 +277,14 @@ class TreeOfThought(BaseAlgorithm):
                     "beam_width": self.beam_width,
                     "total_paths": len(all_paths),
                 },
-            }
+            },
         )
 
         return best_plan, best_score, metadata
 
     def _generate_next_steps(
-        self, problem_statement: str, intermediate_steps: List[str], num_steps: int
-    ) -> List[str]:
+        self, problem_statement: str, intermediate_steps: list[str], num_steps: int,
+    ) -> list[str]:
         """Generate next steps for the current plan using the step prompt.
 
         Args:
@@ -306,7 +302,7 @@ class TreeOfThought(BaseAlgorithm):
 
         # Get the appropriate template
         template_path = self.template_loader.get_algorithm_template(
-            algorithm="tree_of_thought", template_type="step", domain=self.domain
+            algorithm="tree_of_thought", template_type="step", domain=self.domain,
         )
 
         # Generate num_steps different next steps
@@ -325,7 +321,7 @@ class TreeOfThought(BaseAlgorithm):
 
             # Generate the next step
             next_step = self.llm_interface.generate(
-                prompt=prompt, temperature=temperature
+                prompt=prompt, temperature=temperature,
             )
 
             next_steps.append(next_step.strip())
@@ -335,10 +331,10 @@ class TreeOfThought(BaseAlgorithm):
     def _evaluate_step(
         self,
         problem_statement: str,
-        constraints: List[str],
+        constraints: list[str],
         formatted_constraints: str,
         plan: str,
-    ) -> Tuple[str, float]:
+    ) -> tuple[str, float]:
         """Evaluate a plan step using the step reward prompt.
 
         Args:
@@ -352,7 +348,7 @@ class TreeOfThought(BaseAlgorithm):
         """
         # Get the appropriate template
         template_path = self.template_loader.get_algorithm_template(
-            algorithm="tree_of_thought", template_type="reward", domain=self.domain
+            algorithm="tree_of_thought", template_type="reward", domain=self.domain,
         )
 
         # Render the template
@@ -383,7 +379,7 @@ class TreeOfThought(BaseAlgorithm):
 
         return feedback, score
 
-    def _is_complete(self, problem_statement: str, steps: List[str]) -> bool:
+    def _is_complete(self, problem_statement: str, steps: list[str]) -> bool:
         """Check if the current plan is complete using the completion prompt.
 
         Args:
@@ -402,7 +398,7 @@ class TreeOfThought(BaseAlgorithm):
 
         # Get the appropriate template
         template_path = self.template_loader.get_algorithm_template(
-            algorithm="tree_of_thought", template_type="completion", domain=self.domain
+            algorithm="tree_of_thought", template_type="completion", domain=self.domain,
         )
 
         # Render the template

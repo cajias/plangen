@@ -1,9 +1,9 @@
 """
 Base model interface for PlanGEN
 """
+from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional
 
 
 class BaseModelInterface(ABC):
@@ -13,9 +13,9 @@ class BaseModelInterface(ABC):
     def generate(
         self,
         prompt: str,
-        system_message: Optional[str] = None,
-        temperature: Optional[float] = None,
-        max_tokens: Optional[int] = None,
+        system_message: str | None = None,
+        temperature: float | None = None,
+        max_tokens: int | None = None,
     ) -> str:
         """Generate text from the model.
 
@@ -28,16 +28,15 @@ class BaseModelInterface(ABC):
         Returns:
             Generated text from the model
         """
-        pass
 
     @abstractmethod
     def batch_generate(
         self,
-        prompts: List[str],
-        system_message: Optional[str] = None,
-        temperature: Optional[float] = None,
-        max_tokens: Optional[int] = None,
-    ) -> List[str]:
+        prompts: list[str],
+        system_message: str | None = None,
+        temperature: float | None = None,
+        max_tokens: int | None = None,
+    ) -> list[str]:
         """Generate multiple responses from the model.
 
         Args:
@@ -49,4 +48,3 @@ class BaseModelInterface(ABC):
         Returns:
             List of generated texts from the model
         """
-        pass

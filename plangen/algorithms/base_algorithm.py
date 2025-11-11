@@ -1,14 +1,15 @@
 """
 Base Algorithm class for PlanGEN
 """
+from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
-from ..agents.constraint_agent import ConstraintAgent
-from ..agents.verification_agent import VerificationAgent
-from ..utils.llm_interface import LLMInterface
-from ..visualization.observers import Observable
+from plangen.agents.constraint_agent import ConstraintAgent
+from plangen.agents.verification_agent import VerificationAgent
+from plangen.utils.llm_interface import LLMInterface
+from plangen.visualization.observers import Observable
 
 
 class BaseAlgorithm(ABC, Observable):
@@ -16,13 +17,13 @@ class BaseAlgorithm(ABC, Observable):
 
     def __init__(
         self,
-        llm_interface: Optional[LLMInterface] = None,
-        constraint_agent: Optional[ConstraintAgent] = None,
-        verification_agent: Optional[VerificationAgent] = None,
+        llm_interface: LLMInterface | None = None,
+        constraint_agent: ConstraintAgent | None = None,
+        verification_agent: VerificationAgent | None = None,
         model_name: str = "gpt-4o",
         temperature: float = 0.7,
         max_iterations: int = 5,
-    ):
+    ) -> None:
         """Initialize the base algorithm.
 
         Args:
@@ -62,7 +63,7 @@ class BaseAlgorithm(ABC, Observable):
         )
 
     @abstractmethod
-    def run(self, problem_statement: str) -> Tuple[str, float, Dict[str, Any]]:
+    def run(self, problem_statement: str) -> tuple[str, float, dict[str, Any]]:
         """Run the algorithm on the given problem statement.
 
         Args:
@@ -75,13 +76,12 @@ class BaseAlgorithm(ABC, Observable):
             ValueError: If the problem statement is empty
             RuntimeError: If there's an error during algorithm execution
         """
-        pass
 
     def _generate_plan(
         self,
         problem_statement: str,
-        constraints: List[str],
-        temperature: Optional[float] = None,
+        constraints: list[str],
+        temperature: float | None = None,
     ) -> str:
         """Generate a plan for the given problem statement and constraints.
 
@@ -109,8 +109,8 @@ class BaseAlgorithm(ABC, Observable):
         )
 
     def _verify_plan(
-        self, problem_statement: str, constraints: List[str], plan: str
-    ) -> Tuple[str, float]:
+        self, problem_statement: str, constraints: list[str], plan: str,
+    ) -> tuple[str, float]:
         """Verify a plan against constraints and provide a reward score.
 
         Args:

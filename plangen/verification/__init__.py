@@ -11,6 +11,6 @@ from .verifier_factory import VerifierFactory
 
 __all__ = [
     "BaseVerifier",
-    "VerifierFactory",
     "MathVerifier",
+    "VerifierFactory",
 ]

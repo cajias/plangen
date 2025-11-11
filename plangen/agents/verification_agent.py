@@ -2,10 +2,9 @@
 Verification agent for PlanGEN.
 """
 
-from typing import Any, Dict, List, Optional, Tuple
 
-from ..models import BaseModelInterface
-from ..prompts import PromptManager
+from plangen.models import BaseModelInterface
+from plangen.prompts import PromptManager
 
 
 class VerificationAgent:
@@ -15,7 +14,7 @@ class VerificationAgent:
         self,
         model: BaseModelInterface,
         prompt_manager: PromptManager,
-    ):
+    ) -> None:
         """Initialize the verification agent.
 
         Args:
@@ -26,8 +25,8 @@ class VerificationAgent:
         self.prompt_manager = prompt_manager
 
     def verify_solutions(
-        self, solutions: List[str], constraints: str
-    ) -> List[str]:
+        self, solutions: list[str], constraints: str,
+    ) -> list[str]:
         """Verify multiple solutions against constraints.
 
         Args:

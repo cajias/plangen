@@ -5,16 +5,17 @@ This module provides a clean, well-documented public interface for using the Pla
 framework. It is designed to be intuitive and easy to use, hiding the complexity
 of the underlying implementation.
 """
+from __future__ import annotations
 
-from typing import Any, Callable, Dict, List, Optional, Protocol, Tuple, Union
+from typing import Any, Callable, Protocol
 
 # Type definitions for better code readability
 PlanType = str
 ScoreType = float
 ConstraintType = str
 FeedbackType = str
-MetadataType = Dict[str, Any]
-PlanResultType = Tuple[PlanType, ScoreType, MetadataType]
+MetadataType = dict[str, Any]
+PlanResultType = tuple[PlanType, ScoreType, MetadataType]
 
 
 # Define model protocol
@@ -24,9 +25,9 @@ class ModelProtocol(Protocol):
     def generate(
         self,
         prompt: str,
-        system_message: Optional[str] = None,
-        temperature: Optional[float] = None,
-        max_tokens: Optional[int] = None,
+        system_message: str | None = None,
+        temperature: float | None = None,
+        max_tokens: int | None = None,
     ) -> str:
         """Generate text from a prompt.
 
@@ -43,11 +44,11 @@ class ModelProtocol(Protocol):
 
     def batch_generate(
         self,
-        prompts: List[str],
-        system_message: Optional[str] = None,
-        temperature: Optional[float] = None,
-        max_tokens: Optional[int] = None,
-    ) -> List[str]:
+        prompts: list[str],
+        system_message: str | None = None,
+        temperature: float | None = None,
+        max_tokens: int | None = None,
+    ) -> list[str]:
         """Generate text from multiple prompts.
 
         Args:
@@ -69,9 +70,9 @@ class VerifierProtocol(Protocol):
     def verify(
         self,
         problem: str,
-        constraints: List[ConstraintType],
+        constraints: list[ConstraintType],
         plan: PlanType,
-    ) -> Tuple[FeedbackType, ScoreType]:
+    ) -> tuple[FeedbackType, ScoreType]:
         """Verify a plan against constraints.
 
         Args:
@@ -100,12 +101,12 @@ class PlanGen:
     @classmethod
     def create(
         cls,
-        model: Optional[str] = "gpt-4o",
+        model: str | None = "gpt-4o",
         temperature: float = 0.7,
-        max_tokens: Optional[int] = None,
-        api_key: Optional[str] = None,
+        max_tokens: int | None = None,
+        api_key: str | None = None,
         **kwargs,
-    ) -> "PlanGen":
+    ) -> PlanGen:
         """Create a new PlanGen instance with simplified configuration.
 
         Args:
@@ -118,9 +119,9 @@ class PlanGen:
         Returns:
             Configured PlanGen instance
         """
-        from .utils import LLMInterface
         from .plangen import PlanGEN
         from .prompts import PromptManager
+        from .utils import LLMInterface
 
         # Create LLM interface based on model name
         llm_interface = LLMInterface(
@@ -144,7 +145,7 @@ class PlanGen:
         return cls(plangen_instance)
 
     @classmethod
-    def with_model(cls, model: ModelProtocol) -> "PlanGen":
+    def with_model(cls, model: ModelProtocol) -> PlanGen:
         """Create a PlanGen instance with a custom model implementation.
 
         Args:
@@ -168,9 +169,9 @@ class PlanGen:
     def with_openai(
         cls,
         model_name: str = "gpt-4o",
-        api_key: Optional[str] = None,
+        api_key: str | None = None,
         **kwargs,
-    ) -> "PlanGen":
+    ) -> PlanGen:
         """Create a PlanGen instance with OpenAI model.
 
         Args:
@@ -206,7 +207,7 @@ class PlanGen:
         model_id: str = "anthropic.claude-3-sonnet-20240229-v1:0",
         region: str = "us-east-1",
         **kwargs,
-    ) -> "PlanGen":
+    ) -> PlanGen:
         """Create a PlanGen instance with AWS Bedrock model.
 
         Args:
@@ -236,7 +237,7 @@ class PlanGen:
 
         return cls(plangen_instance)
 
-    def __init__(self, plangen_instance):
+    def __init__(self, plangen_instance) -> None:
         """Initialize a PlanGen instance with a PlanGEN instance.
 
         Args:
@@ -248,9 +249,9 @@ class PlanGen:
         self,
         problem: str,
         algorithm: str = "default",
-        verifier: Optional[VerifierProtocol] = None,
+        verifier: VerifierProtocol | None = None,
         **algorithm_params,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Solve a problem using the PlanGEN workflow.
 
         Args:
@@ -291,13 +292,12 @@ class PlanGen:
             }
 
         # Use the default PlanGEN workflow
-        result = self._plangen.solve(problem)
-        return result
+        return self._plangen.solve(problem)
 
     def generate_plan(
         self,
         problem: str,
-        constraints: Optional[List[str]] = None,
+        constraints: list[str] | None = None,
         **kwargs,
     ) -> str:
         """Generate a single plan for the given problem.
@@ -315,13 +315,12 @@ class PlanGen:
             constraints = self.extract_constraints(problem)
 
         # Generate a single solution
-        solution = self._plangen.solution_agent.generate_solutions(
-            problem, constraints, num_solutions=1, **kwargs
+        return self._plangen.solution_agent.generate_solutions(
+            problem, constraints, num_solutions=1, **kwargs,
         )[0]
 
-        return solution
 
-    def extract_constraints(self, problem: str) -> List[str]:
+    def extract_constraints(self, problem: str) -> list[str]:
         """Extract constraints from a problem statement.
 
         Args:
@@ -330,16 +329,15 @@ class PlanGen:
         Returns:
             List of extracted constraints
         """
-        constraints = self._plangen.constraint_agent.extract_constraints(problem)
-        return constraints
+        return self._plangen.constraint_agent.extract_constraints(problem)
 
     def verify_plan(
         self,
         problem: str,
         plan: str,
-        constraints: Optional[List[str]] = None,
-        verifier: Optional[VerifierProtocol] = None,
-    ) -> Tuple[str, float]:
+        constraints: list[str] | None = None,
+        verifier: VerifierProtocol | None = None,
+    ) -> tuple[str, float]:
         """Verify a plan against constraints.
 
         Args:
@@ -361,7 +359,7 @@ class PlanGen:
 
         # Use the default verification agent
         verification_result = self._plangen.verification_agent.verify_solution(
-            plan, constraints
+            plan, constraints,
         )
 
         # Extract feedback and score from verification result
@@ -378,10 +376,10 @@ class Algorithm:
     def create(
         cls,
         algorithm_type: str,
-        model: Optional[ModelProtocol] = None,
-        verifier: Optional[VerifierProtocol] = None,
+        model: ModelProtocol | None = None,
+        verifier: VerifierProtocol | None = None,
         **kwargs,
-    ) -> "Algorithm":
+    ) -> Algorithm:
         """Create an algorithm instance.
 
         Args:
@@ -447,12 +445,13 @@ class Algorithm:
             )
 
         else:
-            raise ValueError(f"Unknown algorithm type: {algorithm_type}")
+            msg = f"Unknown algorithm type: {algorithm_type}"
+            raise ValueError(msg)
 
         # Wrap the algorithm instance
         return cls(algorithm_instance)
 
-    def __init__(self, algorithm_instance):
+    def __init__(self, algorithm_instance) -> None:
         """Initialize an Algorithm instance with an algorithm instance.
 
         Args:
@@ -478,9 +477,9 @@ class Visualization:
     @classmethod
     def create_graph(
         cls,
-        result: Dict[str, Any],
+        result: dict[str, Any],
         output_format: str = "png",
-        output_path: Optional[str] = None,
+        output_path: str | None = None,
         **kwargs,
     ) -> str:
         """Create a visual graph of the planning process.
@@ -505,18 +504,18 @@ class Visualization:
         # Render the graph based on the output format
         if output_format == "png":
             return renderer.render_png(metadata, output_path, **kwargs)
-        elif output_format == "svg":
+        if output_format == "svg":
             return renderer.render_svg(metadata, output_path, **kwargs)
-        elif output_format == "html":
+        if output_format == "html":
             return renderer.render_html(metadata, output_path, **kwargs)
-        else:
-            raise ValueError(f"Unsupported output format: {output_format}")
+        msg = f"Unsupported output format: {output_format}"
+        raise ValueError(msg)
 
     @classmethod
     def render_to_html(
         cls,
-        result: Dict[str, Any],
-        output_path: Optional[str] = None,
+        result: dict[str, Any],
+        output_path: str | None = None,
         **kwargs,
     ) -> str:
         """Render the planning process as an interactive HTML visualization.
@@ -553,10 +552,10 @@ class Verifiers:
         """
         if verifier_type == "calendar":
             return cls.calendar(**kwargs)
-        elif verifier_type == "math":
+        if verifier_type == "math":
             return cls.math(**kwargs)
-        else:
-            raise ValueError(f"Unknown verifier type: {verifier_type}")
+        msg = f"Unknown verifier type: {verifier_type}"
+        raise ValueError(msg)
 
     @classmethod
     def calendar(cls, **kwargs) -> VerifierProtocol:
@@ -601,14 +600,14 @@ class Verifiers:
 
         class CustomVerifier(BaseVerifier):
             def verify_solution(
-                self, problem_statement: str, solution: str, constraints: List[str]
-            ) -> Dict[str, Any]:
+                self, problem_statement: str, solution: str, constraints: list[str],
+            ) -> dict[str, Any]:
                 # Call the user's verify function and adapt to the expected interface
                 feedback, score = verify_function(problem_statement, constraints, solution)
                 return {
                     "is_valid": score > 0.5,
                     "score": score * 100,
-                    "reason": feedback
+                    "reason": feedback,
                 }
 
             def is_applicable(self, problem_statement: str) -> bool:
@@ -616,14 +615,14 @@ class Verifiers:
                 return True
 
             def extract_domain_constraints(
-                self, problem_statement: str, general_constraints: List[str]
-            ) -> List[str]:
+                self, problem_statement: str, general_constraints: list[str],
+            ) -> list[str]:
                 # Custom verifiers don't extract additional constraints
                 return []
 
             def verify(
-                self, problem: str, constraints: List[str], plan: str
-            ) -> Tuple[str, float]:
+                self, problem: str, constraints: list[str], plan: str,
+            ) -> tuple[str, float]:
                 # Support the VerifierProtocol interface
                 return verify_function(problem, constraints, plan)
 

@@ -1,10 +1,10 @@
 """
 Prompt manager for PlanGEN
 """
+from __future__ import annotations
 
 import os
-from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any
 
 import jinja2
 
@@ -12,7 +12,7 @@ import jinja2
 class PromptManager:
     """Manager for loading and rendering prompt templates."""
 
-    def __init__(self, templates_dir: Optional[str] = None):
+    def __init__(self, templates_dir: str | None = None) -> None:
         """Initialize the prompt manager.
 
         Args:

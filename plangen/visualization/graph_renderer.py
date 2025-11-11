@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 import json
 import os
 import time
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 import matplotlib.pyplot as plt
 import networkx as nx
@@ -20,7 +22,7 @@ class GraphRenderer(PlanObserver):
         output_dir: str = "./visualizations",
         auto_render: bool = True,
         render_format: str = "png",
-    ):
+    ) -> None:
         """
         Initialize the graph renderer.
 
@@ -39,7 +41,7 @@ class GraphRenderer(PlanObserver):
         # Create output directory if it doesn't exist
         os.makedirs(output_dir, exist_ok=True)
 
-    def update(self, plan_data: Dict[str, Any]) -> None:
+    def update(self, plan_data: dict[str, Any]) -> None:
         """
         Update the graph with new plan data.
 
@@ -70,7 +72,7 @@ class GraphRenderer(PlanObserver):
         if self.auto_render:
             self.render(save=True, display=False)
 
-    def _update_tree_of_thought_graph(self, plan_data: Dict[str, Any]) -> None:
+    def _update_tree_of_thought_graph(self, plan_data: dict[str, Any]) -> None:
         """
         Update graph for TreeOfThought algorithm.
 
@@ -96,7 +98,7 @@ class GraphRenderer(PlanObserver):
                 if parent_id and parent_id in self.graph:
                     self.graph.add_edge(parent_id, node_id)
 
-    def _update_rebase_graph(self, plan_data: Dict[str, Any]) -> None:
+    def _update_rebase_graph(self, plan_data: dict[str, Any]) -> None:
         """
         Update graph for REBASE algorithm.
 
@@ -126,7 +128,7 @@ class GraphRenderer(PlanObserver):
                     prev_node_id, 
                     node_id, 
                     label="refinement",
-                    improvement=plan_data.get("score", 0) - self.graph.nodes[prev_node_id].get("score", 0)
+                    improvement=plan_data.get("score", 0) - self.graph.nodes[prev_node_id].get("score", 0),
                 )
             
             # Add an initial node if this is the first iteration
@@ -141,7 +143,7 @@ class GraphRenderer(PlanObserver):
                     )
                 self.graph.add_edge(root_id, node_id)
 
-    def _update_best_of_n_graph(self, plan_data: Dict[str, Any]) -> None:
+    def _update_best_of_n_graph(self, plan_data: dict[str, Any]) -> None:
         """
         Update graph for BestOfN algorithm.
 
@@ -166,7 +168,7 @@ class GraphRenderer(PlanObserver):
                 label=f"Plan {plan_id}" + (" (Selected)" if is_selected else ""),
                 is_selected=is_selected,
                 plan_id=plan_id,
-                verification=plan_data.get("verification", "")
+                verification=plan_data.get("verification", ""),
             )
 
             # Connect to central node
@@ -184,7 +186,7 @@ class GraphRenderer(PlanObserver):
                 central_id, 
                 node_id, 
                 weight=score,
-                label=f"Score: {score:.2f}"
+                label=f"Score: {score:.2f}",
             )
             
         # Update for selecting the best plan
@@ -211,10 +213,10 @@ class GraphRenderer(PlanObserver):
                     best_node_id, 
                     selected_id, 
                     weight=1.0,
-                    label="Selected"
+                    label="Selected",
                 )
 
-    def _update_mixture_of_algorithms_graph(self, plan_data: Dict[str, Any]) -> None:
+    def _update_mixture_of_algorithms_graph(self, plan_data: dict[str, Any]) -> None:
         """
         Update graph for MixtureOfAlgorithms.
 
@@ -298,7 +300,7 @@ class GraphRenderer(PlanObserver):
             if last_algo_node:
                 self.graph.add_edge(last_algo_node, final_node_id)
 
-    def _update_generic_graph(self, plan_data: Dict[str, Any]) -> None:
+    def _update_generic_graph(self, plan_data: dict[str, Any]) -> None:
         """
         Generic graph update for unknown algorithm types.
 
@@ -326,7 +328,7 @@ class GraphRenderer(PlanObserver):
             self.graph.add_edge(prev_node_id, node_id)
 
     def render(
-        self, save: bool = True, display: bool = False, filename: Optional[str] = None
+        self, save: bool = True, display: bool = False, filename: str | None = None,
     ) -> None:
         """
         Render the current state of the graph.
@@ -345,9 +347,7 @@ class GraphRenderer(PlanObserver):
 
         # Customize layout based on algorithm type
         try:
-            if self.algorithm_type == "TreeOfThought":
-                pos = nx.nx_agraph.graphviz_layout(self.graph, prog="dot")
-            elif self.algorithm_type == "REBASE":
+            if self.algorithm_type in {"TreeOfThought", "REBASE"}:
                 pos = nx.nx_agraph.graphviz_layout(self.graph, prog="dot")
             elif self.algorithm_type == "BestOfN":
                 pos = nx.spring_layout(self.graph)
@@ -426,7 +426,7 @@ class GraphRenderer(PlanObserver):
                 label_parts = []
                 for key, value in node_data.items():
                     if key not in ["timestamp"] and isinstance(
-                        value, (str, int, float, bool)
+                        value, (str, int, float, bool),
                     ):
                         label_parts.append(f"{key}: {value}")
                 node_labels[node] = "\n".join(label_parts[:3])
@@ -447,7 +447,7 @@ class GraphRenderer(PlanObserver):
 
         # Add title with algorithm type and timestamp
         plt.title(
-            f"{self.algorithm_type or 'Unknown'} Plan Exploration - {time.strftime('%Y-%m-%d %H:%M:%S')}"
+            f"{self.algorithm_type or 'Unknown'} Plan Exploration - {time.strftime('%Y-%m-%d %H:%M:%S')}",
         )
 
         # Save the figure if requested
@@ -460,7 +460,7 @@ class GraphRenderer(PlanObserver):
 
             filepath = os.path.join(self.output_dir, filename)
             plt.savefig(
-                filepath, format=self.render_format, dpi=300, bbox_inches="tight"
+                filepath, format=self.render_format, dpi=300, bbox_inches="tight",
             )
 
         # Display the figure if requested
@@ -469,7 +469,7 @@ class GraphRenderer(PlanObserver):
         else:
             plt.close()
 
-    def save_graph_data(self, filename: Optional[str] = None) -> None:
+    def save_graph_data(self, filename: str | None = None) -> None:
         """
         Save the current graph data as JSON.
 
@@ -490,7 +490,7 @@ class GraphRenderer(PlanObserver):
             # Convert non-serializable values to strings
             for key, value in node_data.items():
                 if not isinstance(
-                    value, (str, int, float, bool, list, dict, type(None))
+                    value, (str, int, float, bool, list, dict, type(None)),
                 ):
                     node_data[key] = str(value)
 

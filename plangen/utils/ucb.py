@@ -3,9 +3,6 @@ Upper Confidence Bound (UCB) implementation for PlanGEN
 """
 
 import math
-from typing import Dict, List, Tuple
-
-import numpy as np
 
 
 class UCB:
@@ -16,7 +13,7 @@ class UCB:
     Precise regret and adaptive inference"
     """
 
-    def __init__(self, algorithm_names: List[str], exploration_weight: float = 2.0):
+    def __init__(self, algorithm_names: list[str], exploration_weight: float = 2.0) -> None:
         """Initialize the UCB algorithm.
 
         Args:
@@ -27,8 +24,8 @@ class UCB:
         self.exploration_weight = exploration_weight
 
         # Initialize counts and values for each algorithm
-        self.counts = {algo: 0 for algo in algorithm_names}
-        self.values = {algo: 0.0 for algo in algorithm_names}
+        self.counts = dict.fromkeys(algorithm_names, 0)
+        self.values = dict.fromkeys(algorithm_names, 0.0)
         self.total_pulls = 0
 
     def select_algorithm(self) -> str:
@@ -47,7 +44,7 @@ class UCB:
         for algo in self.algorithm_names:
             exploitation = self.values[algo]
             exploration = self.exploration_weight * math.sqrt(
-                math.log(self.total_pulls) / self.counts[algo]
+                math.log(self.total_pulls) / self.counts[algo],
             )
             ucb_scores[algo] = exploitation + exploration
 
@@ -77,7 +74,7 @@ class UCB:
         """
         return max(self.values.items(), key=lambda x: x[1])[0]
 
-    def get_ucb_scores(self) -> Dict[str, float]:
+    def get_ucb_scores(self) -> dict[str, float]:
         """Get the current UCB scores for all algorithms.
 
         Returns:
@@ -90,7 +87,7 @@ class UCB:
             else:
                 exploitation = self.values[algo]
                 exploration = self.exploration_weight * math.sqrt(
-                    math.log(self.total_pulls) / self.counts[algo]
+                    math.log(self.total_pulls) / self.counts[algo],
                 )
                 ucb_scores[algo] = exploitation + exploration
 

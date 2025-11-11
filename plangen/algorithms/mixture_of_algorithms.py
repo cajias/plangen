@@ -21,13 +21,14 @@ Example:
     best_plan, score, metadata = algorithm.run(problem_statement)
     ```
 """
+from __future__ import annotations
 
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
-from ..agents.selection_agent import SelectionAgent
-from ..utils.llm_interface import LLMInterface
-from ..utils.template_loader import TemplateLoader
-from ..visualization.observers import PlanObserver
+from plangen.agents.selection_agent import SelectionAgent
+from plangen.utils.template_loader import TemplateLoader
+from plangen.visualization.observers import PlanObserver
+
 from .base_algorithm import BaseAlgorithm
 from .best_of_n import BestOfN
 from .rebase import REBASE
@@ -49,11 +50,11 @@ class MixtureOfAlgorithms(BaseAlgorithm, PlanObserver):
 
     def __init__(
         self,
-        selection_agent: Optional[SelectionAgent] = None,
+        selection_agent: SelectionAgent | None = None,
         max_algorithm_switches: int = 2,
-        domain: Optional[str] = None,
+        domain: str | None = None,
         **kwargs,
-    ):
+    ) -> None:
         """Initialize the Mixture of Algorithms approach.
 
         Args:
@@ -90,7 +91,7 @@ class MixtureOfAlgorithms(BaseAlgorithm, PlanObserver):
         }
 
         self.selection_agent = selection_agent or SelectionAgent(
-            llm_interface=self.llm_interface
+            llm_interface=self.llm_interface,
         )
         self.max_algorithm_switches = max_algorithm_switches
         self.domain = domain
@@ -98,7 +99,7 @@ class MixtureOfAlgorithms(BaseAlgorithm, PlanObserver):
         # Initialize template loader
         self.template_loader = TemplateLoader()
 
-    def run(self, problem_statement: str) -> Tuple[str, float, Dict[str, Any]]:
+    def run(self, problem_statement: str) -> tuple[str, float, dict[str, Any]]:
         """Run the Mixture of Algorithms approach on the given problem statement.
 
         Args:
@@ -109,8 +110,8 @@ class MixtureOfAlgorithms(BaseAlgorithm, PlanObserver):
         """
         # Extract constraints
         constraints = self.constraint_agent.run(problem_statement)
-        formatted_constraints = "\n".join(
-            [f"- {constraint}" for constraint in constraints]
+        "\n".join(
+            [f"- {constraint}" for constraint in constraints],
         )
         
         # Notify observers about algorithm start
@@ -121,7 +122,7 @@ class MixtureOfAlgorithms(BaseAlgorithm, PlanObserver):
                 "problem_statement": problem_statement,
                 "constraints": constraints,
                 "max_algorithm_switches": self.max_algorithm_switches,
-            }
+            },
         )
 
         # Select initial algorithm
@@ -136,7 +137,7 @@ class MixtureOfAlgorithms(BaseAlgorithm, PlanObserver):
                 "selected_algorithm": current_algorithm_name,
                 "selection_type": "initial",
                 "selection_reason": "Initial algorithm selection based on problem characteristics",
-            }
+            },
         )
 
         # Track algorithm switches
@@ -148,7 +149,7 @@ class MixtureOfAlgorithms(BaseAlgorithm, PlanObserver):
 
         # Run initial algorithm
         current_plan, current_score, current_metadata = current_algorithm.run(
-            problem_statement
+            problem_statement,
         )
         
         # Notify observers about algorithm completion
@@ -160,7 +161,7 @@ class MixtureOfAlgorithms(BaseAlgorithm, PlanObserver):
                 "plan": current_plan,
                 "score": current_score,
                 "iteration": 0,
-            }
+            },
         )
 
         # Track all iterations for metadata
@@ -170,7 +171,7 @@ class MixtureOfAlgorithms(BaseAlgorithm, PlanObserver):
                 "plan": current_plan,
                 "score": current_score,
                 "metadata": current_metadata,
-            }
+            },
         ]
 
         # Iteratively switch algorithms if needed
@@ -193,7 +194,7 @@ class MixtureOfAlgorithms(BaseAlgorithm, PlanObserver):
                         "event": "algorithm_switch_skipped",
                         "reason": "Same algorithm selected",
                         "algorithm": current_algorithm_name,
-                    }
+                    },
                 )
                 break
 
@@ -211,12 +212,12 @@ class MixtureOfAlgorithms(BaseAlgorithm, PlanObserver):
                     "selection_type": "switch",
                     "iteration": iteration + 1,
                     "selection_reason": f"Switching to {current_algorithm_name} based on previous results",
-                }
+                },
             )
 
             # Run next algorithm
             next_plan, next_score, next_metadata = current_algorithm.run(
-                problem_statement
+                problem_statement,
             )
             
             # Notify observers about algorithm completion
@@ -228,7 +229,7 @@ class MixtureOfAlgorithms(BaseAlgorithm, PlanObserver):
                     "plan": next_plan,
                     "score": next_score,
                     "iteration": iteration + 1,
-                }
+                },
             )
 
             # Track iteration
@@ -238,7 +239,7 @@ class MixtureOfAlgorithms(BaseAlgorithm, PlanObserver):
                     "plan": next_plan,
                     "score": next_score,
                     "metadata": next_metadata,
-                }
+                },
             )
 
             # Keep the better plan
@@ -256,7 +257,7 @@ class MixtureOfAlgorithms(BaseAlgorithm, PlanObserver):
                         "plan": current_plan,
                         "score": current_score,
                         "improvement": next_score - current_score,
-                    }
+                    },
                 )
 
         # Prepare metadata
@@ -278,12 +279,12 @@ class MixtureOfAlgorithms(BaseAlgorithm, PlanObserver):
                 "algorithm_history": algorithm_history,
                 "final_plan": current_plan,
                 "final_score": current_score,
-            }
+            },
         )
 
         return current_plan, current_score, metadata
 
-    def _select_algorithm(self, problem_statement: str, constraints: List[str]) -> str:
+    def _select_algorithm(self, problem_statement: str, constraints: list[str]) -> str:
         """Select an algorithm based on the problem statement and constraints.
 
         Args:
@@ -302,7 +303,7 @@ class MixtureOfAlgorithms(BaseAlgorithm, PlanObserver):
 
         # Format constraints as a string
         formatted_constraints = "\n".join(
-            [f"- {constraint}" for constraint in constraints]
+            [f"- {constraint}" for constraint in constraints],
         )
 
         # Render the template
@@ -319,7 +320,7 @@ class MixtureOfAlgorithms(BaseAlgorithm, PlanObserver):
         response = self.llm_interface.generate(prompt=prompt)
 
         # Extract the algorithm name from the response
-        for algorithm_name in self.algorithms.keys():
+        for algorithm_name in self.algorithms:
             if algorithm_name in response:
                 return algorithm_name
 
@@ -329,7 +330,7 @@ class MixtureOfAlgorithms(BaseAlgorithm, PlanObserver):
     def _select_next_algorithm(
         self,
         problem_statement: str,
-        constraints: List[str],
+        constraints: list[str],
         current_plan: str,
         current_score: float,
         current_algorithm: str,
@@ -355,7 +356,7 @@ class MixtureOfAlgorithms(BaseAlgorithm, PlanObserver):
 
         # Format constraints as a string
         formatted_constraints = "\n".join(
-            [f"- {constraint}" for constraint in constraints]
+            [f"- {constraint}" for constraint in constraints],
         )
 
         # Render the template
@@ -375,14 +376,14 @@ class MixtureOfAlgorithms(BaseAlgorithm, PlanObserver):
         response = self.llm_interface.generate(prompt=prompt)
 
         # Extract the algorithm name from the response
-        for algorithm_name in self.algorithms.keys():
+        for algorithm_name in self.algorithms:
             if algorithm_name in response and algorithm_name != current_algorithm:
                 return algorithm_name
 
         # Default to current algorithm if no new algorithm is found
         return current_algorithm
         
-    def update(self, plan_data: Dict[str, Any]) -> None:
+    def update(self, plan_data: dict[str, Any]) -> None:
         """Receive updates from child algorithms and delegate to observers.
         
         This method implements the PlanObserver interface to receive updates
@@ -401,7 +402,7 @@ class MixtureOfAlgorithms(BaseAlgorithm, PlanObserver):
                 "algorithm_type": "MixtureOfAlgorithms",
                 "event": "delegated_update",
                 "delegated_algorithm": algorithm_type,
-                "algorithm_data": plan_data
+                "algorithm_data": plan_data,
             }
             
             # Notify our observers with the delegated data

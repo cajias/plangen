@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List
+from typing import Any
 
 
 class PlanObserver(ABC):
@@ -8,14 +8,13 @@ class PlanObserver(ABC):
     """
 
     @abstractmethod
-    def update(self, plan_data: Dict[str, Any]) -> None:
+    def update(self, plan_data: dict[str, Any]) -> None:
         """
         Update the observer with new plan data.
 
         Args:
             plan_data: Dictionary containing updated plan information
         """
-        pass
 
 
 class Observable:
@@ -24,8 +23,8 @@ class Observable:
     Implements the subject part of the observer pattern.
     """
 
-    def __init__(self):
-        self._observers: List[PlanObserver] = []
+    def __init__(self) -> None:
+        self._observers: list[PlanObserver] = []
 
     def add_observer(self, observer: PlanObserver) -> None:
         """
@@ -47,7 +46,7 @@ class Observable:
         if observer in self._observers:
             self._observers.remove(observer)
 
-    def notify_observers(self, plan_data: Dict[str, Any]) -> None:
+    def notify_observers(self, plan_data: dict[str, Any]) -> None:
         """
         Notify all observers with updated plan data.
 
