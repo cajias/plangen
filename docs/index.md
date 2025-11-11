@@ -32,6 +32,9 @@ Detailed explanation of the planning algorithms available in PlanGEN, including 
 ### [Examples](examples/index.md)
 Code examples for various scenarios and use cases.
 
+### [API Design and Orchestration Integration](API_DESIGN_AND_ORCHESTRATION.md)
+Comprehensive review of API design, compatibility with agent orchestration frameworks, and recommendations for integration. Includes guides for LangChain, LangGraph, and other frameworks.
+
 ## Support
 
-If you encounter issues or have questions, please [open an issue](https://github.com/yourusername/plangen/issues) on GitHub.
+If you encounter issues or have questions, please [open an issue](https://github.com/cajias/plangen/issues) on GitHub.
