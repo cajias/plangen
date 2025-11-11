@@ -58,111 +58,25 @@ build-backend = "poetry.core.masonry.api"
 
 # ==============================================================================
 # Linting and Code Quality Configuration
-# Based on: https://github.com/cajias/lint-configs
+# References: https://github.com/cajias/lint-configs
+#
+# Ruff: Configuration in .ruff.toml (synced from cajias/lint-configs)
+#       Run scripts/sync-lint-config.sh to update from upstream
 # ==============================================================================
 
+# Black configuration (from cajias/lint-configs)
 [tool.black]
 line-length = 120
 target-version = ["py39"]
 
+# isort configuration (from cajias/lint-configs)
 [tool.isort]
 profile = "black"
 line_length = 120
 force_single_line = false
 lines_after_imports = 2
 
-[tool.ruff]
-target-version = "py39"
-line-length = 120
-
-[tool.ruff.lint]
-# Enable comprehensive rule set (40+ categories)
-select = [
-    "E",      # pycodestyle errors
-    "F",      # Pyflakes
-    "I",      # isort
-    "B",      # flake8-bugbear
-    "C90",    # McCabe complexity
-    "SIM",    # flake8-simplify
-    "ANN",    # flake8-annotations
-    "S",      # flake8-bandit (security)
-    "N",      # pep8-naming
-    "UP",     # pyupgrade
-    "YTT",    # flake8-2020
-    "ASYNC",  # flake8-async
-    "BLE",    # flake8-blind-except
-    "FBT",    # flake8-boolean-trap
-    "A",      # flake8-builtins
-    "COM",    # flake8-commas
-    "C4",     # flake8-comprehensions
-    "DTZ",    # flake8-datetimez
-    "T10",    # flake8-debugger
-    "DJ",     # flake8-django
-    "EM",     # flake8-errmsg
-    "EXE",    # flake8-executable
-    "FA",     # flake8-future-annotations
-    "ISC",    # flake8-implicit-str-concat
-    "ICN",    # flake8-import-conventions
-    "G",      # flake8-logging-format
-    "INP",    # flake8-no-pep420
-    "PIE",    # flake8-pie
-    "T20",    # flake8-print
-    "PYI",    # flake8-pyi
-    "PT",     # flake8-pytest-style
-    "Q",      # flake8-quotes
-    "RSE",    # flake8-raise
-    "RET",    # flake8-return
-    "SLF",    # flake8-self
-    "SLOT",   # flake8-slots
-    "TID",    # flake8-tidy-imports
-    "TCH",    # flake8-type-checking
-    "INT",    # flake8-gettext
-    "ARG",    # flake8-unused-arguments
-    "PTH",    # flake8-use-pathlib
-    "TD",     # flake8-todos
-    "FIX",    # flake8-fixme
-    "ERA",    # eradicate
-    "PD",     # pandas-vet
-    "PGH",    # pygrep-hooks
-    "PL",     # Pylint
-    "TRY",    # tryceratops
-    "FLY",    # flynt
-    "NPY",    # NumPy-specific
-    "AIR",    # Airflow
-    "PERF",   # Perflint
-    "FURB",   # refurb
-    "LOG",    # flake8-logging
-    "RUF",    # Ruff-specific
-]
-
-# Only ignore formatter conflicts
-ignore = [
-    "E203",  # Whitespace before ':' (Black compatibility)
-    "E501",  # Line too long (Black handles this)
-]
-
-# Per-file ignores for tests
-[tool.ruff.lint.per-file-ignores]
-"tests/**/*.py" = [
-    "S101",    # Allow assertions in tests
-    "ANN001",  # Don't require type hints in tests
-    "ANN201",  # Don't require return type hints in tests
-    "PLR2004", # Allow magic numbers in tests
-    "PLR0913", # Allow many arguments in test functions
-]
-
-[tool.ruff.lint.mccabe]
-max-complexity = 10
-
-[tool.ruff.lint.pylint]
-max-args = 5
-max-branches = 12
-max-returns = 6
-max-statements = 50
-
-[tool.ruff.lint.pydocstyle]
-convention = "google"
-
+# MyPy configuration (from cajias/lint-configs)
 [tool.mypy]
 python_version = "3.9"
 warn_return_any = true
@@ -176,7 +90,7 @@ warn_no_return = true
 check_untyped_defs = true
 strict_equality = true
 
-# Third-party library overrides
+# Project-specific third-party library overrides
 [[tool.mypy.overrides]]
 module = [
     "langgraph.*",
@@ -185,6 +99,7 @@ module = [
 ]
 ignore_missing_imports = true
 
+# Pylint configuration (from cajias/lint-configs)
 [tool.pylint.main]
 jobs = 0
 load-plugins = ["pylint.extensions.docparams"]
@@ -214,12 +129,14 @@ ignore-imports = true
 good-names = ["i", "j", "k", "ex", "Run", "_", "id"]
 const-rgx = "^([A-Z_][A-Z0-9_]*|__.*__|log)$"
 
+# Pytest configuration
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "--cov=plangen --cov-report=term-missing --cov-report=html --cov-report=xml"
 asyncio_mode = "auto"
 filterwarnings = ["error"]
 
+# Coverage configuration (80% minimum from cajias/lint-configs)
 [tool.coverage.run]
 branch = true
 parallel = true
