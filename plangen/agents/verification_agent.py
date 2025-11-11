@@ -4,59 +4,51 @@ Verification agent for PlanGEN.
 
 from typing import Any, Dict, List, Optional, Tuple
 
-from ..utils.llm_interface import LLMInterface
-from ..verification import BaseVerifier, VerifierFactory
+from ..models import BaseModelInterface
+from ..prompts import PromptManager
 
 
 class VerificationAgent:
     """Agent for verifying plans and solutions."""
 
     def __init__(
-        self, llm_interface: LLMInterface, verifier: Optional[BaseVerifier] = None
+        self,
+        model: BaseModelInterface,
+        prompt_manager: PromptManager,
     ):
         """Initialize the verification agent.
 
         Args:
-            llm_interface: LLM interface for generating responses
-            verifier: Optional specific verifier to use. If None, will auto-detect.
+            model: Model interface for generating responses
+            prompt_manager: Manager for prompt templates
         """
-        self.llm_interface = llm_interface
-        self.verifier = verifier
-        self.verifier_factory = VerifierFactory()
+        self.model = model
+        self.prompt_manager = prompt_manager
 
-    def run(
-        self,
-        problem_statement: str,
-        constraints: List[str],
-        plan: str,
-    ) -> Tuple[str, float]:
-        """Verify a plan against constraints.
+    def verify_solutions(
+        self, solutions: List[str], constraints: str
+    ) -> List[str]:
+        """Verify multiple solutions against constraints.
 
         Args:
-            problem_statement: Original problem statement
-            constraints: List of constraints
-            plan: Plan to verify
+            solutions: List of solutions to verify
+            constraints: Extracted constraints
 
         Returns:
-            Tuple of (feedback, score)
+            List of verification results
         """
-        # Get appropriate verifier
-        verifier = self.verifier or self.verifier_factory.get_verifier(
-            problem_statement
-        )
+        # Get the system message for verification
+        system_message = self.prompt_manager.get_system_message("verification")
 
-        # Extract domain-specific constraints
-        domain_constraints = verifier.extract_domain_constraints(
-            problem_statement, constraints
-        )
-        all_constraints = constraints + domain_constraints
+        # Verify each solution
+        verification_results = []
+        for solution in solutions:
+            prompt = self.prompt_manager.get_prompt(
+                "solution_verification",
+                solution=solution,
+                constraints=constraints,
+            )
+            verification = self.model.generate(prompt, system_message=system_message)
+            verification_results.append(verification)
 
-        # Verify the solution
-        results = verifier.verify_solution(problem_statement, plan, all_constraints)
-
-        # Format feedback
-        feedback = f"Verification: {'PASS' if results['is_valid'] else 'FAIL'}\n"
-        feedback += f"Reason: {results['reason']}\n"
-        feedback += f"Score: {results['score']}"
-
-        return feedback, float(results["score"])
+        return verification_results

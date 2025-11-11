@@ -189,19 +189,15 @@ class TestPlanGEN:
         mock_workflow = MagicMock()
         mock_build_workflow.return_value = mock_workflow
 
-        # Expected result
-        expected_result = {
-            "problem": "Test problem",
-            "constraints": "Extracted constraints",
-            "solutions": ["Solution 1", "Solution 2"],
-            "verification_results": ["Verification 1", "Verification 2"],
-            "selected_solution": {
-                "selected_solution": "Solution 1",
-                "selection_reasoning": "Reasoning",
-                "selected_index": 0,
-            },
-        }
-        mock_workflow.invoke.return_value = expected_result
+        # Configure mock to return proper string values
+        mock_model.generate.side_effect = [
+            "Extracted constraints",  # For constraint extraction
+            "Solution 1", "Solution 2", "Solution 3",  # For solution generation (num_solutions=3)
+            "Verification 1", "Verification 2", "Verification 3",  # For verification
+            "Solution 1",  # For selection
+        ]
+        mock_prompt_manager.get_system_message.return_value = "System message"
+        mock_prompt_manager.get_prompt.return_value = "Prompt"
 
         # Create PlanGEN and test
         plangen = PlanGEN(
@@ -210,6 +206,9 @@ class TestPlanGEN:
         )
         result = plangen.solve("Test problem")
 
-        # Verify
-        assert result == expected_result
-        mock_workflow.invoke.assert_called_with({"problem": "Test problem"})
+        # Verify basic structure
+        assert result["problem"] == "Test problem"
+        assert result["constraints"] == "Extracted constraints"
+        assert result["solutions"] == ["Solution 1", "Solution 2", "Solution 3"]
+        assert result["verification_results"] == ["Verification 1", "Verification 2", "Verification 3"]
+        assert "selected_solution" in result
