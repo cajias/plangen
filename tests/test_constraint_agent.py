@@ -86,6 +86,47 @@ class TestConstraintAgent(unittest.TestCase):
         self.assertIn("Meeting must be on Monday", constraints)
         self.assertIn("Meeting must be between 9:00 and 17:00", constraints)
 
+    def test_extract_constraints_method_exists(self):
+        """Regression test for issue #25: Verify extract_constraints method exists."""
+        # Verify that the extract_constraints method exists
+        self.assertTrue(
+            hasattr(self.agent, 'extract_constraints'),
+            "ConstraintAgent must have extract_constraints method"
+        )
+        self.assertTrue(
+            callable(getattr(self.agent, 'extract_constraints')),
+            "extract_constraints must be callable"
+        )
+
+    def test_extract_constraints_delegates_to_run(self):
+        """Regression test for issue #25: Verify extract_constraints and run produce same results."""
+        # Mock the llm_interface used by ConstraintAgent
+        mock_llm_interface = MagicMock()
+        mock_llm_interface.generate.return_value = """
+        1. Constraint one
+        2. Constraint two
+        3. Constraint three
+        """
+
+        agent = ConstraintAgent(llm_interface=mock_llm_interface)
+        problem_statement = "Test problem statement"
+
+        # Call both methods
+        result_from_run = agent.run(problem_statement)
+        result_from_extract = agent.extract_constraints(problem_statement)
+
+        # Verify both methods produce the same results
+        self.assertEqual(
+            result_from_run,
+            result_from_extract,
+            "extract_constraints should delegate to run and produce identical results"
+        )
+
+        # Verify both contain expected constraints
+        self.assertIn("Constraint one", result_from_run)
+        self.assertIn("Constraint two", result_from_run)
+        self.assertIn("Constraint three", result_from_run)
+
 
 if __name__ == "__main__":
     unittest.main()
