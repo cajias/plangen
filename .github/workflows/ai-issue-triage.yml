@@ -18,5 +18,7 @@ jobs:
         uses: cajias/custom-github-actions/ai-triage@v1.0.3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          model: claude-3-5-sonnet-20241022
+          anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
           project-owner: cajias
           project-number: 4
