@@ -289,8 +289,6 @@ We welcome contributions! If you'd like to contribute to PlanGEN:
 7. Push to the branch (`git push origin feature/amazing-feature`)
 8. Open a Pull Request
 
-For maintainers who need to publish new versions to PyPI, see the [Publishing Guide](PUBLISHING.md).
-
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
