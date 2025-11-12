@@ -46,3 +46,6 @@ htmlcov/
 *_result.json
 *_results.json
 plangen_*.json
+
+# Documentation build output
+site/
