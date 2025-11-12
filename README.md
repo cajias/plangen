@@ -276,6 +276,21 @@ See the `examples` directory for more detailed examples:
 - `test_rebase.py`: Using the REBASE algorithm
 - `test_verification.py`: Using verification strategies
 
+## Contributing
+
+We welcome contributions! If you'd like to contribute to PlanGEN:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Make your changes and add tests
+4. Run the test suite: `pytest`
+5. Run linting: `ruff .` and `black .`
+6. Commit your changes (`git commit -m 'Add amazing feature'`)
+7. Push to the branch (`git push origin feature/amazing-feature`)
+8. Open a Pull Request
+
+For maintainers who need to publish new versions to PyPI, see the [Publishing Guide](PUBLISHING.md).
+
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.

@@ -22,7 +22,8 @@ jobs:
   build-and-publish:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write  # Required for creating releases
+      id-token: write  # Required for trusted publishing (optional, for future use)
 
     steps:
     - uses: actions/checkout@v4
