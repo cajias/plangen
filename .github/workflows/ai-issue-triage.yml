@@ -15,7 +15,7 @@ jobs:
 
     steps:
       - name: AI Issue Triage
-        uses: cajias/custom-github-actions/ai-triage@v1
+        uses: cajias/custom-github-actions/ai-triage@v1.0.3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           project-owner: cajias
