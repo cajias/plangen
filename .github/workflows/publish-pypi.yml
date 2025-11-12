@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write  # Required for creating releases
-      id-token: write  # Required for trusted publishing (optional, for future use)
+      # Add 'id-token: write' when migrating to trusted publishing (OIDC)
 
     steps:
     - uses: actions/checkout@v4
