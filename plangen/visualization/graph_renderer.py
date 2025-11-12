@@ -388,18 +388,31 @@ class GraphRenderer(PlanObserver):
         self: Self, node: str, node_data: dict[str, Any],
     ) -> tuple[str, str]:
         """Create label and color for REBASE nodes."""
+        node_type = node_data.get("type", "")
+        
+        if node_type == "root":
+            return "Problem", "gray"
+        
         score = node_data.get("score", 0)
         try:
             iteration = int(node.split("_")[1]) if "_" in node else 0
         except (ValueError, IndexError):
             iteration = 0
+        
         feedback = (
             node_data.get("feedback", "")[:20] + "..."
             if "feedback" in node_data
             else ""
         )
         label = f"Iter {iteration}\nScore: {score:.2f}\n{feedback}"
-        return label, "skyblue"
+        
+        # Use color gradient based on score (0-100 range)
+        score_norm = max(0, min(100, score)) / 100.0
+        if score_norm < 0.5:
+            return label, "lightcoral"
+        if score_norm < 0.75:
+            return label, "lightyellow"
+        return label, "lightgreen"
 
     def _create_best_of_n_label_and_color(
         self: Self, node: str, node_data: dict[str, Any],
@@ -408,8 +421,33 @@ class GraphRenderer(PlanObserver):
         if node.startswith("plan_"):
             score = node_data.get("score", 0)
             plan_id = node.split("_")[1]
-            return f"Plan {plan_id}\nScore: {score:.2f}", "lightgreen"
+            is_selected = node_data.get("is_selected", False)
+            color = "gold" if is_selected else "lightgreen"
+            return f"Plan {plan_id}\nScore: {score:.2f}", color
+        if node == "best_of_n_root":
+            return "Problem", "gray"
+        if node == "selected_plan":
+            return "Best Solution", "gold"
         return "Root", "gray"
+
+    def _create_mixture_of_algorithms_label_and_color(
+        self: Self, node: str, node_data: dict[str, Any],
+    ) -> tuple[str, str]:
+        """Create label and color for MixtureOfAlgorithms nodes."""
+        node_type = node_data.get("type", "")
+        
+        if node_type == "algorithm":
+            algorithm = node_data.get("algorithm", "")
+            label = node_data.get("label", f"Algorithm: {algorithm}")
+            return label, "lightyellow"
+        if node_type == "root":
+            return "Problem", "gray"
+        if node_type == "final":
+            score = node_data.get("score", 0)
+            return f"Final Solution\nScore: {score:.2f}", "gold"
+        
+        # For delegated nodes, use their respective algorithm styling
+        return self._create_generic_label_and_color(node_data)
 
     def _create_generic_label_and_color(
         self: Self, node_data: dict[str, Any],
@@ -439,6 +477,8 @@ class GraphRenderer(PlanObserver):
             return self._create_rebase_label_and_color(node, node_data)
         if self.algorithm_type == "BestOfN":
             return self._create_best_of_n_label_and_color(node, node_data)
+        if self.algorithm_type == "MixtureOfAlgorithms":
+            return self._create_mixture_of_algorithms_label_and_color(node, node_data)
         return self._create_generic_label_and_color(node_data)
 
     def render(
