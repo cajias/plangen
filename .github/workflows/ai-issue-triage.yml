@@ -7,6 +7,7 @@ on:
 permissions:
   contents: read
   issues: write
+  projects: write
   models: read  # Required for GitHub Models
 
 jobs:
