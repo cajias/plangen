@@ -24,7 +24,6 @@ from __future__ import annotations
 
 from typing import Any, Self
 
-from plangen.agents.selection_agent import SelectionAgent
 from plangen.utils.template_loader import TemplateLoader
 from plangen.visualization.observers import PlanObserver
 
@@ -41,7 +40,6 @@ class MixtureOfAlgorithms(BaseAlgorithm, PlanObserver):
     the problem's complexity and characteristics.
 
     Attributes:
-        selection_agent: Agent for selecting algorithms
         algorithms: Dictionary of available algorithms
         max_algorithm_switches: Maximum number of algorithm switches allowed
         domain: Optional domain name for domain-specific templates
@@ -49,7 +47,6 @@ class MixtureOfAlgorithms(BaseAlgorithm, PlanObserver):
 
     def __init__(
         self: Self,
-        selection_agent: SelectionAgent | None = None,
         max_algorithm_switches: int = 2,
         domain: str | None = None,
         **kwargs: object,
@@ -57,12 +54,17 @@ class MixtureOfAlgorithms(BaseAlgorithm, PlanObserver):
         """Initialize the Mixture of Algorithms approach.
 
         Args:
-            selection_agent: Optional selection agent to use
             max_algorithm_switches: Maximum number of algorithm switches allowed
             domain: Optional domain name for domain-specific templates
             **kwargs: Additional arguments passed to BaseAlgorithm
         """
         super().__init__(**kwargs)
+
+        # Filter out kwargs that we're passing explicitly to avoid duplicates
+        filtered_kwargs = {
+            k: v for k, v in kwargs.items()
+            if k not in ['llm_interface', 'constraint_agent', 'verification_agent']
+        }
 
         # Initialize the algorithms
         self.algorithms = {
@@ -71,27 +73,24 @@ class MixtureOfAlgorithms(BaseAlgorithm, PlanObserver):
                 constraint_agent=self.constraint_agent,
                 verification_agent=self.verification_agent,
                 domain=domain,
-                **kwargs,
+                **filtered_kwargs,
             ),
             "Tree of Thought": TreeOfThought(
                 llm_interface=self.llm_interface,
                 constraint_agent=self.constraint_agent,
                 verification_agent=self.verification_agent,
                 domain=domain,
-                **kwargs,
+                **filtered_kwargs,
             ),
             "REBASE": REBASE(
                 llm_interface=self.llm_interface,
                 constraint_agent=self.constraint_agent,
                 verification_agent=self.verification_agent,
                 domain=domain,
-                **kwargs,
+                **filtered_kwargs,
             ),
         }
 
-        self.selection_agent = selection_agent or SelectionAgent(
-            llm_interface=self.llm_interface,
-        )
         self.max_algorithm_switches = max_algorithm_switches
         self.domain = domain
 
