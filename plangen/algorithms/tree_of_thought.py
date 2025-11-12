@@ -7,7 +7,8 @@ The algorithm supports domain-specific verification and templates.
 Example:
     ```python
     from plangen.algorithms import TreeOfThought
-    from plangen.examples.calendar import CalendarVerifier
+    # CalendarVerifier is available in examples/calendar_domain/
+    from calendar_domain import CalendarVerifier
 
     # Initialize with domain-specific verifier
     algorithm = TreeOfThought(

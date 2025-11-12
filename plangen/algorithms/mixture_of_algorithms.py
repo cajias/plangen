@@ -7,7 +7,8 @@ The approach supports domain-specific templates and verification.
 Example:
     ```python
     from plangen.algorithms import MixtureOfAlgorithms
-    from plangen.examples.calendar import CalendarVerifier
+    # CalendarVerifier is available in examples/calendar_domain/
+    from calendar_domain import CalendarVerifier
 
     # Initialize with domain-specific verifier
     algorithm = MixtureOfAlgorithms(

@@ -4,13 +4,17 @@ Test script for the REBASE algorithm
 
 import json
 import os
+import sys
 
 from dotenv import load_dotenv
 
+# Add examples directory to path to allow importing calendar_domain
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+from calendar_domain import CalendarVerifier
 from plangen.agents.constraint_agent import ConstraintAgent
 from plangen.agents.verification_agent import VerificationAgent
 from plangen.algorithms.rebase import REBASE
-from plangen.examples.calendar import CalendarVerifier
 from plangen.utils.llm_interface import LLMInterface
 
 # Load environment variables from .env file

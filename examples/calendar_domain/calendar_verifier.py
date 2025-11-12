@@ -4,7 +4,7 @@ from __future__ import annotations
 import re
 from typing import Any, Self
 
-from plangen.examples.base_verifier import BaseVerifier
+from plangen.verification.base_verifier import BaseVerifier
 from plangen.utils.time_slot_verifier import TimeSlot, TimeSlotVerifier
 
 

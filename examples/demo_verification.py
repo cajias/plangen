@@ -2,7 +2,13 @@
 Test script for the time slot verification mechanism.
 """
 
-from plangen.examples.calendar import TimeSlot, TimeSlotVerifier
+import os
+import sys
+
+# Add examples directory to path to allow importing calendar_domain
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+from calendar_domain import TimeSlot, TimeSlotVerifier
 
 
 def main():
