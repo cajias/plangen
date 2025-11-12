@@ -11,7 +11,13 @@ This example demonstrates how to implement domain-specific verification for cale
 ## Usage
 
 ```python
-from plangen.examples.calendar import CalendarVerifier
+import sys
+import os
+
+# Add examples directory to path
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from calendar_domain import CalendarVerifier
 from plangen.verification import VerifierFactory
 
 # Create and register the calendar verifier
