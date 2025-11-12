@@ -12,6 +12,7 @@ from dotenv import load_dotenv
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from calendar_domain import CalendarVerifier
+
 from plangen.agents.constraint_agent import ConstraintAgent
 from plangen.agents.verification_agent import VerificationAgent
 from plangen.algorithms.rebase import REBASE
@@ -88,11 +89,15 @@ def main():
             print(f"\nIteration {i}:")
             print(f"  Score: {iteration['score']:.1f}")
             if i > 0:
-                improvement = iteration["score"] - metadata["iterations"][i-1]["score"]
+                improvement = (
+                    iteration["score"] - metadata["iterations"][i - 1]["score"]
+                )
                 print(f"  Improvement: {improvement:+.1f}")
             print(f"  Plan: {iteration['plan'][:100]}...")  # First 100 chars
             if iteration["feedback"]:
-                print(f"  Feedback: {iteration['feedback'][:100]}...")  # First 100 chars
+                print(
+                    f"  Feedback: {iteration['feedback'][:100]}..."
+                )  # First 100 chars
 
         # Save the results to a file
         with open("rebase_result.json", "w") as f:
