@@ -1,0 +1,22 @@
+name: AI Issue Triage
+
+on:
+  issues:
+    types: [opened, labeled]
+
+permissions:
+  contents: read
+  issues: write
+  models: read  # Required for GitHub Models
+
+jobs:
+  triage:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: AI Issue Triage
+        uses: cajias/custom-github-actions/ai-triage@main
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          project-owner: cajias
+          project-number: 4
