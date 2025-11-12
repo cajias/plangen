@@ -8,23 +8,16 @@ __version__ = "0.1.0"
 
 # Import public API classes - the recommended interface for users
 # Import agent classes
-from .agents import (
-    ConstraintAgent,
-    SelectionAgent,
-    SolutionAgent,
-    VerificationAgent,
-)
+from .agents import (ConstraintAgent, SelectionAgent, SolutionAgent,
+                     VerificationAgent)
 from .api import Algorithm, PlanGen, Verifiers, Visualization
 from .plangen import PlanGEN
-from .visualization import (
-    GraphRenderer,
-    Observable,
-    PlanObserver,
-)
-
+from .types import AlgorithmResult, PlanResult, SolveResult, VerificationResult
+from .visualization import GraphRenderer, Observable, PlanObserver
 
 __all__ = [
     "Algorithm",
+    "AlgorithmResult",
     "ConstraintAgent",
     "GraphRenderer",
     "Observable",
@@ -33,9 +26,12 @@ __all__ = [
     # Public API (recommended)
     "PlanGen",
     "PlanObserver",
+    "PlanResult",
     "SelectionAgent",
     "SolutionAgent",
+    "SolveResult",
     "VerificationAgent",
+    "VerificationResult",
     "Verifiers",
     "Visualization",
 ]

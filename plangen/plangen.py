@@ -1,4 +1,5 @@
 """Main PlanGEN implementation using LangGraph."""
+
 from __future__ import annotations
 
 from typing import Any, Self, TypedDict
@@ -6,9 +7,11 @@ from typing import Any, Self, TypedDict
 from langgraph.graph import END, StateGraph
 
 # Import from the main agents module, not the package
-from .agents import ConstraintAgent, SelectionAgent, SolutionAgent, VerificationAgent
+from .agents import (ConstraintAgent, SelectionAgent, SolutionAgent,
+                     VerificationAgent)
 from .models import BaseModelInterface, OpenAIModelInterface
 from .prompts import PromptManager
+from .types import SolveResult
 
 
 class PlanGENState(TypedDict):
@@ -67,7 +70,7 @@ class PlanGEN:
         """
         try:
             constraints = self.constraint_agent.extract_constraints(state["problem"])
-        except (RuntimeError, ValueError, KeyError) as e:
+        except Exception as e:
             return {"error": f"Error extracting constraints: {e!s}"}
         else:
             return {"constraints": constraints}
@@ -83,9 +86,11 @@ class PlanGEN:
         """
         try:
             solutions = self.solution_agent.generate_solutions(
-                state["problem"], state["constraints"], num_solutions=self.num_solutions,
+                state["problem"],
+                state["constraints"],
+                num_solutions=self.num_solutions,
             )
-        except (RuntimeError, ValueError, KeyError) as e:
+        except Exception as e:
             return {"error": f"Error generating solutions: {e!s}"}
         else:
             return {"solutions": solutions}
@@ -101,9 +106,10 @@ class PlanGEN:
         """
         try:
             verification_results = self.verification_agent.verify_solutions(
-                state["solutions"], state["constraints"],
+                state["solutions"],
+                state["constraints"],
             )
-        except (RuntimeError, ValueError, KeyError) as e:
+        except Exception as e:
             return {"error": f"Error verifying solutions: {e!s}"}
         else:
             return {"verification_results": verification_results}
@@ -119,9 +125,10 @@ class PlanGEN:
         """
         try:
             selected = self.selection_agent.select_best_solution(
-                state["solutions"], state["verification_results"],
+                state["solutions"],
+                state["verification_results"],
             )
-        except (RuntimeError, ValueError, KeyError) as e:
+        except Exception as e:
             return {"error": f"Error selecting solution: {e!s}"}
         else:
             return {"selected_solution": selected}
@@ -166,43 +173,108 @@ class PlanGEN:
         # Compile the graph
         return workflow.compile()
 
-    def solve(self: Self, problem: str) -> dict[str, Any]:
+    def solve(self: Self, problem: str) -> SolveResult:
         """Solve a problem using the PlanGEN workflow.
 
         Args:
             problem: Problem statement
 
         Returns:
-            Dictionary with the solution and intermediate results
+            SolveResult with the solution and intermediate results
         """
         try:
             # Initialize the state
-            state = {"problem": problem}
+            state: PlanGENState = {
+                "problem": problem,
+                "constraints": None,
+                "solutions": None,
+                "verification_results": None,
+                "selected_solution": None,
+                "error": None,
+            }
 
             # Extract constraints
             constraints_result = self._extract_constraints(state)
             if "error" in constraints_result:
-                return {"problem": problem, "error": constraints_result["error"]}
+                return SolveResult(
+                    problem=problem,
+                    constraints=None,
+                    solutions=None,
+                    verification_results=None,
+                    selected_solution=None,
+                    score=None,
+                    metadata={},
+                    error=constraints_result["error"],
+                )
             state.update(constraints_result)
 
             # Generate solutions
             solutions_result = self._generate_solutions(state)
             if "error" in solutions_result:
-                return {**state, "error": solutions_result["error"]}
+                return SolveResult(
+                    problem=problem,
+                    constraints=state.get("constraints"),
+                    solutions=None,
+                    verification_results=None,
+                    selected_solution=None,
+                    score=None,
+                    metadata={},
+                    error=solutions_result["error"],
+                )
             state.update(solutions_result)
 
             # Verify solutions
             verify_result = self._verify_solutions(state)
             if "error" in verify_result:
-                return {**state, "error": verify_result["error"]}
+                return SolveResult(
+                    problem=problem,
+                    constraints=state.get("constraints"),
+                    solutions=state.get("solutions"),
+                    verification_results=None,
+                    selected_solution=None,
+                    score=None,
+                    metadata={},
+                    error=verify_result["error"],
+                )
             state.update(verify_result)
 
             # Select solution
             select_result = self._select_solution(state)
             if "error" in select_result:
-                return {**state, "error": select_result["error"]}
+                return SolveResult(
+                    problem=problem,
+                    constraints=state.get("constraints"),
+                    solutions=state.get("solutions"),
+                    verification_results=state.get("verification_results"),
+                    selected_solution=None,
+                    score=None,
+                    metadata={},
+                    error=select_result["error"],
+                )
             state.update(select_result)
-        except (RuntimeError, ValueError, KeyError) as e:
-            return {"problem": problem, "error": f"Error in workflow: {e!s}"}
-        else:
-            return state
+
+            # Extract score from selected solution if available
+            selected = state.get("selected_solution")
+            score = selected.get("score") if selected else None
+
+            return SolveResult(
+                problem=problem,
+                constraints=state.get("constraints"),
+                solutions=state.get("solutions"),
+                verification_results=state.get("verification_results"),
+                selected_solution=state.get("selected_solution"),
+                score=score,
+                metadata={},
+                error=None,
+            )
+        except Exception as e:
+            return SolveResult(
+                problem=problem,
+                constraints=None,
+                solutions=None,
+                verification_results=None,
+                selected_solution=None,
+                score=None,
+                metadata={},
+                error=f"Error in workflow: {e!s}",
+            )

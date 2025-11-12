@@ -4,15 +4,16 @@ This module provides a clean, well-documented public interface for using the Pla
 framework. It is designed to be intuitive and easy to use, hiding the complexity
 of the underlying implementation.
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Callable, Protocol, Self
-
 
 if TYPE_CHECKING:
     from plangen.algorithms.base_algorithm import BaseAlgorithm
     from plangen.plangen import PlanGEN
 
+from plangen.types import PlanResult, SolveResult, VerificationResult
 
 # Constants
 DEFAULT_SCORE_THRESHOLD = 0.5
@@ -259,7 +260,7 @@ class PlanGen:
         algorithm: str = "default",
         _verifier: VerifierProtocol | None = None,
         **algorithm_params: object,
-    ) -> dict[str, Any]:
+    ) -> SolveResult | PlanResult:
         """Solve a problem using the PlanGEN workflow.
 
         Args:
@@ -269,7 +270,7 @@ class PlanGen:
             **algorithm_params: Additional parameters for the specific algorithm
 
         Returns:
-            Dictionary with the solution and intermediate results
+            SolveResult if using default workflow, PlanResult if using specific algorithm
 
         Example:
             ```python
@@ -292,12 +293,12 @@ class PlanGen:
 
             # Run the algorithm directly if not using default
             best_plan, score, metadata = algorithm_instance.run(problem)
-            return {
-                "problem": problem,
-                "selected_solution": best_plan,
-                "score": score,
-                "metadata": metadata,
-            }
+            return PlanResult(
+                problem=problem,
+                selected_solution=best_plan,
+                score=score,
+                metadata=metadata,
+            )
 
         # Use the default PlanGEN workflow
         return self._plangen.solve(problem)
@@ -324,9 +325,11 @@ class PlanGen:
 
         # Generate a single solution
         return self._plangen.solution_agent.generate_solutions(
-            problem, constraints, num_solutions=1, **kwargs,
+            problem,
+            constraints,
+            num_solutions=1,
+            **kwargs,
         )[0]
-
 
     def extract_constraints(self: Self, problem: str) -> list[str]:
         """Extract constraints from a problem statement.
@@ -345,7 +348,7 @@ class PlanGen:
         plan: str,
         constraints: list[str] | None = None,
         verifier: VerifierProtocol | None = None,
-    ) -> tuple[str, float]:
+    ) -> tuple[str, float] | VerificationResult:
         """Verify a plan against constraints.
 
         Args:
@@ -355,7 +358,7 @@ class PlanGen:
             verifier: Optional custom verifier
 
         Returns:
-            Tuple of (feedback, score)
+            Tuple of (feedback, score) for backward compatibility, or VerificationResult
         """
         # Extract constraints if not provided
         if constraints is None:
@@ -367,7 +370,8 @@ class PlanGen:
 
         # Use the default verification agent
         verification_result = self._plangen.verification_agent.verify_solution(
-            plan, constraints,
+            plan,
+            constraints,
         )
 
         # Extract feedback and score from verification result
@@ -399,7 +403,8 @@ class Algorithm:
         Returns:
             Configured algorithm instance
         """
-        from .algorithms import REBASE, BestOfN, MixtureOfAlgorithms, TreeOfThought
+        from .algorithms import (REBASE, BestOfN, MixtureOfAlgorithms,
+                                 TreeOfThought)
         from .utils import LLMInterface
 
         # Convert model to LLMInterface if needed
@@ -548,7 +553,9 @@ class Verifiers:
     """Factory for domain-specific verifiers."""
 
     @classmethod
-    def create(cls: type[Self], verifier_type: str, **kwargs: object) -> VerifierProtocol:
+    def create(
+        cls: type[Self], verifier_type: str, **kwargs: object
+    ) -> VerifierProtocol:
         """Create a verifier for a specific domain.
 
         Args:
@@ -594,7 +601,9 @@ class Verifiers:
         return MathVerifier(**kwargs)
 
     @classmethod
-    def custom(cls: type[Self], verify_function: Callable, **kwargs: object) -> VerifierProtocol:
+    def custom(
+        cls: type[Self], verify_function: Callable, **kwargs: object
+    ) -> VerifierProtocol:
         """Create a custom verifier with a function.
 
         Args:
@@ -608,10 +617,15 @@ class Verifiers:
 
         class CustomVerifier(BaseVerifier):
             def verify_solution(
-                self: Self, problem_statement: str, solution: str, constraints: list[str],
+                self: Self,
+                problem_statement: str,
+                solution: str,
+                constraints: list[str],
             ) -> dict[str, Any]:
                 # Call the user's verify function and adapt to the expected interface
-                feedback, score = verify_function(problem_statement, constraints, solution)
+                feedback, score = verify_function(
+                    problem_statement, constraints, solution
+                )
                 return {
                     "is_valid": score > DEFAULT_SCORE_THRESHOLD,
                     "score": score * 100,
@@ -623,13 +637,18 @@ class Verifiers:
                 return True
 
             def extract_domain_constraints(
-                self: Self, _problem_statement: str, _general_constraints: list[str],
+                self: Self,
+                _problem_statement: str,
+                _general_constraints: list[str],
             ) -> list[str]:
                 # Custom verifiers don't extract additional constraints
                 return []
 
             def verify(
-                self: Self, problem: str, constraints: list[str], plan: str,
+                self: Self,
+                problem: str,
+                constraints: list[str],
+                plan: str,
             ) -> tuple[str, float]:
                 # Support the VerifierProtocol interface
                 return verify_function(problem, constraints, plan)
