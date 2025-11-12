@@ -3,6 +3,8 @@
 from abc import ABC, abstractmethod
 from typing import Any, Self
 
+from plangen.types import VerificationResult
+
 
 class BaseVerifier(ABC):
     """Abstract base class for solution verifiers.
@@ -14,8 +16,11 @@ class BaseVerifier(ABC):
 
     @abstractmethod
     def verify_solution(
-        self: Self, problem_statement: str, solution: str, constraints: list[str],
-    ) -> dict[str, Any]:
+        self: Self,
+        problem_statement: str,
+        solution: str,
+        constraints: list[str],
+    ) -> dict[str, Any] | VerificationResult:
         """Verify if a solution satisfies the constraints for a given problem.
 
         Args:
@@ -24,10 +29,11 @@ class BaseVerifier(ABC):
             constraints: List of constraints the solution must satisfy
 
         Returns:
-            Dictionary containing verification results with at least:
+            VerificationResult or dict containing verification results with at least:
             - 'is_valid': Boolean indicating if solution is valid
             - 'score': Numerical score (0-100) indicating solution quality
             - 'reason': Explanation of verification result
+            - 'feedback': Optional detailed feedback
         """
 
     @abstractmethod
@@ -43,7 +49,9 @@ class BaseVerifier(ABC):
 
     @abstractmethod
     def extract_domain_constraints(
-        self: Self, problem_statement: str, general_constraints: list[str],
+        self: Self,
+        problem_statement: str,
+        general_constraints: list[str],
     ) -> list[str]:
         """Extract domain-specific constraints from the problem statement.
 
