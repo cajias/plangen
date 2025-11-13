@@ -7,7 +7,8 @@ verification and templates.
 Example:
     ```python
     from plangen.algorithms import REBASE
-    from plangen.examples.calendar import CalendarVerifier
+    # CalendarVerifier is available in examples/calendar_domain/
+    from calendar_domain import CalendarVerifier
 
     # Initialize with domain-specific verifier
     algorithm = REBASE(

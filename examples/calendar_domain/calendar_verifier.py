@@ -1,11 +1,12 @@
 """Calendar-specific verification strategy."""
+
 from __future__ import annotations
 
 import re
 from typing import Any, Self
 
-from plangen.examples.base_verifier import BaseVerifier
 from plangen.utils.time_slot_verifier import TimeSlot, TimeSlotVerifier
+from plangen.verification.base_verifier import BaseVerifier
 
 
 class CalendarVerifier(BaseVerifier):
@@ -49,7 +50,10 @@ class CalendarVerifier(BaseVerifier):
         return bool(re.search(time_pattern, problem_statement))
 
     def verify_solution(
-        self: Self, problem_statement: str, solution: str, constraints: list[str],
+        self: Self,
+        problem_statement: str,
+        solution: str,
+        constraints: list[str],
     ) -> dict[str, Any]:
         """Verify if a solution satisfies the constraints for a calendar problem.
 
@@ -106,7 +110,9 @@ class CalendarVerifier(BaseVerifier):
         }
 
     def extract_domain_constraints(
-        self: Self, problem_statement: str, _general_constraints: list[str],
+        self: Self,
+        problem_statement: str,
+        _general_constraints: list[str],
     ) -> list[str]:
         """Extract calendar-specific constraints from the problem statement.
 
@@ -157,7 +163,9 @@ class CalendarVerifier(BaseVerifier):
         return None
 
     def _extract_busy_times(
-        self: Self, problem_statement: str, constraints: list[str],
+        self: Self,
+        problem_statement: str,
+        constraints: list[str],
     ) -> list[str]:
         """Extract busy times from problem statement and constraints.
 
@@ -229,7 +237,9 @@ class CalendarVerifier(BaseVerifier):
 
         return constraints
 
-    def _extract_availability_constraints(self: Self, problem_statement: str) -> list[str]:
+    def _extract_availability_constraints(
+        self: Self, problem_statement: str
+    ) -> list[str]:
         """Extract availability constraints from the problem statement.
 
         Args:
