@@ -18,5 +18,3 @@ jobs:
         uses: cajias/custom-github-actions/ai-triage@copilot/fix-issue-for-custom-actions
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          project-owner: cajias
-          project-number: 4
