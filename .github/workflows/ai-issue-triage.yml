@@ -15,7 +15,7 @@ jobs:
 
     steps:
       - name: AI Issue Triage
-        uses: cajias/custom-github-actions/ai-triage@v1.0.2
+        uses: cajias/custom-github-actions/ai-triage@main
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           model: claude-3-5-sonnet-20241022
