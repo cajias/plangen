@@ -8,6 +8,7 @@ permissions:
   contents: read
   issues: write
   models: read  # Required for GitHub Models
+  projects: write  # Required for user project access
 
 jobs:
   triage:
@@ -18,3 +19,5 @@ jobs:
         uses: cajias/custom-github-actions/ai-triage@v1.0.3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          project-owner: cajias
+          project-number: 4
