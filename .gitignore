@@ -41,3 +41,8 @@ solution_metadata.json
 htmlcov/
 .pytest_cache/
 .mypy_cache/
+
+# Example output files
+*_result.json
+*_results.json
+plangen_*.json
