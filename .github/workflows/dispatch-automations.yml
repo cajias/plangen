@@ -1,0 +1,45 @@
+# Minimal webhook dispatcher
+# Sends events to centralized workflow-automations repo
+
+name: Dispatch to Automations
+
+on:
+  issues:
+    types: [opened, edited, assigned]
+  pull_request:
+    types: [closed]
+
+jobs:
+  dispatch-issues:
+    if: github.event_name == 'issues'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dispatch issue event
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.AUTOMATION_DISPATCH_TOKEN }}
+          repository: cajias/workflow-automations
+          event-type: issue-${{ github.event.action }}
+          client-payload: |
+            {
+              "repository": "${{ github.repository }}",
+              "issue_number": ${{ github.event.issue.number }},
+              "action": "${{ github.event.action }}"
+            }
+
+  dispatch-pulls:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dispatch PR event
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.AUTOMATION_DISPATCH_TOKEN }}
+          repository: cajias/workflow-automations
+          event-type: pull_request-${{ github.event.action }}
+          client-payload: |
+            {
+              "repository": "${{ github.repository }}",
+              "pull_number": ${{ github.event.pull_request.number }},
+              "action": "${{ github.event.action }}"
+            }
