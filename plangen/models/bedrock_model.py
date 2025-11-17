@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import json
-from typing import Self
+from typing import Iterator, Self
 
 import boto3
 
@@ -65,6 +65,37 @@ class BedrockModelInterface(BaseModelInterface):
             List of generated texts
         """
         return [self.generate(prompt, system_message) for prompt in prompts]
+
+    def generate_stream(
+        self: Self,
+        prompt: str,
+        system_message: str | None = None,
+        temperature: float | None = None,
+        max_tokens: int | None = None,
+    ) -> Iterator[str]:
+        """Generate text using the Bedrock model with streaming.
+
+        Args:
+            prompt: Input prompt
+            system_message: Optional system message
+            temperature: Optional temperature override
+            max_tokens: Optional max tokens override
+
+        Yields:
+            Chunks of generated text from the model
+        """
+        # Format the prompt based on model type
+        if "anthropic" in self.model_id:
+            yield from self._generate_anthropic_stream(
+                prompt, system_message, temperature, max_tokens
+            )
+        elif "amazon" in self.model_id:
+            yield from self._generate_amazon_stream(
+                prompt, system_message, temperature, max_tokens
+            )
+        else:
+            msg = f"Unsupported model ID: {self.model_id}"
+            raise ValueError(msg)
 
     def _generate_anthropic(
         self: Self, prompt: str, system_message: str | None = None,
@@ -145,3 +176,99 @@ class BedrockModelInterface(BaseModelInterface):
         # Parse the response
         response_body = json.loads(response["body"].read())
         return response_body["results"][0]["outputText"]
+
+    def _generate_anthropic_stream(
+        self: Self,
+        prompt: str,
+        system_message: str | None = None,
+        temperature: float | None = None,
+        max_tokens: int | None = None,
+    ) -> Iterator[str]:
+        """Generate text using Anthropic Claude models with streaming.
+
+        Args:
+            prompt: Input prompt
+            system_message: Optional system message
+            temperature: Optional temperature override
+            max_tokens: Optional max tokens override
+
+        Yields:
+            Chunks of generated text
+        """
+        # For Claude 3 in Bedrock, we need to format the prompt differently
+        full_prompt = prompt
+        if system_message:
+            full_prompt = f"{system_message}\n\n{prompt}"
+
+        # Format messages for Claude 3
+        messages = [{"role": "user", "content": full_prompt}]
+
+        # Prepare the request body
+        body = {
+            "anthropic_version": "bedrock-2023-05-31",
+            "max_tokens": max_tokens or self.max_tokens,
+            "messages": messages,
+            "temperature": temperature or self.temperature,
+        }
+
+        # Make the streaming API call
+        response = self.client.invoke_model_with_response_stream(
+            modelId=self.model_id,
+            body=json.dumps(body),
+            contentType="application/json",
+            accept="application/json",
+        )
+
+        # Process the stream
+        for event in response["body"]:
+            chunk = json.loads(event["chunk"]["bytes"])
+            if chunk["type"] == "content_block_delta":
+                if "delta" in chunk and "text" in chunk["delta"]:
+                    yield chunk["delta"]["text"]
+
+    def _generate_amazon_stream(
+        self: Self,
+        prompt: str,
+        system_message: str | None = None,
+        temperature: float | None = None,
+        max_tokens: int | None = None,
+    ) -> Iterator[str]:
+        """Generate text using Amazon Titan models with streaming.
+
+        Args:
+            prompt: Input prompt
+            system_message: Optional system message
+            temperature: Optional temperature override
+            max_tokens: Optional max tokens override
+
+        Yields:
+            Chunks of generated text
+        """
+        # Combine system message and prompt for Titan models
+        full_prompt = prompt
+        if system_message:
+            full_prompt = f"{system_message}\n\n{prompt}"
+
+        # Prepare the request body for Titan models
+        body = {
+            "inputText": full_prompt,
+            "textGenerationConfig": {
+                "maxTokenCount": max_tokens or self.max_tokens,
+                "temperature": temperature or self.temperature,
+                "topP": 0.9,
+            },
+        }
+
+        # Make the streaming API call
+        response = self.client.invoke_model_with_response_stream(
+            modelId=self.model_id,
+            body=json.dumps(body),
+            contentType="application/json",
+            accept="application/json",
+        )
+
+        # Process the stream
+        for event in response["body"]:
+            chunk = json.loads(event["chunk"]["bytes"])
+            if "outputText" in chunk:
+                yield chunk["outputText"]
