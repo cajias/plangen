@@ -53,6 +53,12 @@ pylint = "^3.0.0"
 pip-audit = "^2.9.0"
 agentic-guardrails = {git = "https://github.com/cajias/agentic-guardrails.git", tag = "v1.0.1", subdirectory = "python"}
 
+[tool.poetry.group.docs.dependencies]
+mkdocs = "^1.5.0"
+mkdocs-material = "^9.5.0"
+mkdocs-minify-plugin = "^0.7.0"
+pymdown-extensions = "^10.7.0"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"

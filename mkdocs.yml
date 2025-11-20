@@ -1,0 +1,109 @@
+site_name: PlanGEN Documentation
+site_description: A multi-agent framework for solving complex problems using large language models
+site_author: PlanGEN Team
+site_url: https://cajias.github.io/plangen
+repo_url: https://github.com/cajias/plangen
+repo_name: cajias/plangen
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.tabs.link
+    - content.code.annotation
+    - content.code.copy
+  language: en
+
+plugins:
+  - search:
+      separator: '[\s\-,:!=\[\]()"`/]+|\.(?!\d)|&[lg]t;|(?!\b)(?=[A-Z][a-z])'
+  - minify:
+      minify_html: true
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - admonition
+  - pymdownx.details
+  - pymdownx.mark
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - User Guide:
+      - Overview: user_guide/index.md
+      - Installation: user_guide/installation.md
+      - Quick Start: user_guide/quickstart.md
+      - Configuration: user_guide/configuration.md
+      - Models: user_guide/models.md
+      - Custom Prompts: user_guide/custom_prompts.md
+      - Verification: user_guide/verification.md
+      - Visualization: user_guide/visualization.md
+  - API Reference:
+      - Overview: api_reference/index.md
+      - PlanGen: api_reference/plangen.md
+      - Algorithms: api_reference/algorithm.md
+      - Visualization: api_reference/visualization.md
+      - Verifiers: api_reference/verifiers.md
+  - Algorithm Reference:
+      - Overview: algorithm_reference/index.md
+      - Algorithm Selection Guide: algorithm_reference/algorithm_selection_guide.md
+      - BestOfN: algorithm_reference/best_of_n.md
+      - TreeOfThought: algorithm_reference/tree_of_thought.md
+      - REBASE: algorithm_reference/rebase.md
+      - Mixture of Algorithms: algorithm_reference/mixture_of_algorithms.md
+  - Examples:
+      - Overview: examples/index.md
+      - Simple Example: examples/simple_example.md
+      - OpenAI Example: examples/openai_example.md
+      - Bedrock Example: examples/bedrock_example.md
+      - BestOfN Example: examples/best_of_n_example.md
+      - TreeOfThought Example: examples/tree_of_thought_example.md
+      - REBASE Example: examples/rebase_example.md
+      - Mixture Example: examples/mixture_of_algorithms_example.md
+      - Custom Verification: examples/custom_verification.md
+      - Visualization: examples/visualization_example.md
+      - Custom Prompts: examples/custom_prompts_example.md
+  - Advanced:
+      - API Design & Orchestration: API_DESIGN_AND_ORCHESTRATION.md
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/cajias/plangen
+  version:
+    provider: mike
+
+copyright: Copyright &copy; 2024 PlanGEN Team
