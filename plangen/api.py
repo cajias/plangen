@@ -7,7 +7,7 @@ of the underlying implementation.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, Protocol, Self
+from typing import TYPE_CHECKING, Any, Callable, Iterator, Protocol, Self
 
 if TYPE_CHECKING:
     from plangen.algorithms.base_algorithm import BaseAlgorithm
@@ -302,6 +302,34 @@ class PlanGen:
 
         # Use the default PlanGEN workflow
         return self._plangen.solve(problem)
+
+    def solve_stream(
+        self: Self,
+        problem: str,
+    ) -> Iterator[dict[str, Any]]:
+        """Solve a problem using the PlanGEN workflow with streaming.
+
+        Args:
+            problem: Problem statement to solve
+
+        Yields:
+            Dictionary with step information:
+                - step: Name of the current step ('extract_constraints', 'generate_solutions', 
+                        'verify_solutions', 'select_solution', or 'error')
+                - status: 'in_progress', 'complete', or 'error'
+                - data: Step-specific data (constraints, solutions, verification results, etc.)
+                - error: Error message if status is 'error'
+
+        Example:
+            ```python
+            plangen = PlanGen.create(model="gpt-4o")
+            for update in plangen.solve_stream("Your problem here"):
+                print(f"{update['step']}: {update['status']}")
+                if update['status'] == 'complete':
+                    print(f"Data: {update['data']}")
+            ```
+        """
+        yield from self._plangen.solve_stream(problem)
 
     def generate_plan(
         self: Self,

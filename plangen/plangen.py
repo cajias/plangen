@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Self, TypedDict
+from typing import Any, Iterator, Self, TypedDict
 
 from langgraph.graph import END, StateGraph
 
@@ -278,3 +278,156 @@ class PlanGEN:
                 metadata={},
                 error=f"Error in workflow: {e!s}",
             )
+
+    def solve_stream(self: Self, problem: str) -> Iterator[dict[str, Any]]:
+        """Solve a problem using the PlanGEN workflow with streaming.
+
+        Args:
+            problem: Problem statement
+
+        Yields:
+            Dictionary with step information:
+                - step: Name of the current step
+                - status: 'in_progress', 'complete', or 'error'
+                - data: Step-specific data (constraints, solutions, etc.)
+                - error: Error message if status is 'error'
+        """
+        try:
+            # Initialize the state
+            state: PlanGENState = {
+                "problem": problem,
+                "constraints": None,
+                "solutions": None,
+                "verification_results": None,
+                "selected_solution": None,
+                "error": None,
+            }
+
+            # Step 1: Extract constraints
+            yield {
+                "step": "extract_constraints",
+                "status": "in_progress",
+                "data": None,
+            }
+
+            constraints_result = self._extract_constraints(state)
+            if "error" in constraints_result:
+                yield {
+                    "step": "extract_constraints",
+                    "status": "error",
+                    "data": None,
+                    "error": constraints_result["error"],
+                }
+                return
+
+            state.update(constraints_result)
+            yield {
+                "step": "extract_constraints",
+                "status": "complete",
+                "data": {"constraints": state["constraints"]},
+            }
+
+            # Step 2: Generate solutions
+            yield {
+                "step": "generate_solutions",
+                "status": "in_progress",
+                "data": None,
+            }
+
+            solutions_result = self._generate_solutions(state)
+            if "error" in solutions_result:
+                yield {
+                    "step": "generate_solutions",
+                    "status": "error",
+                    "data": {"constraints": state["constraints"]},
+                    "error": solutions_result["error"],
+                }
+                return
+
+            state.update(solutions_result)
+            yield {
+                "step": "generate_solutions",
+                "status": "complete",
+                "data": {
+                    "constraints": state["constraints"],
+                    "solutions": state["solutions"],
+                },
+            }
+
+            # Step 3: Verify solutions
+            yield {
+                "step": "verify_solutions",
+                "status": "in_progress",
+                "data": None,
+            }
+
+            verify_result = self._verify_solutions(state)
+            if "error" in verify_result:
+                yield {
+                    "step": "verify_solutions",
+                    "status": "error",
+                    "data": {
+                        "constraints": state["constraints"],
+                        "solutions": state["solutions"],
+                    },
+                    "error": verify_result["error"],
+                }
+                return
+
+            state.update(verify_result)
+            yield {
+                "step": "verify_solutions",
+                "status": "complete",
+                "data": {
+                    "constraints": state["constraints"],
+                    "solutions": state["solutions"],
+                    "verification_results": state["verification_results"],
+                },
+            }
+
+            # Step 4: Select solution
+            yield {
+                "step": "select_solution",
+                "status": "in_progress",
+                "data": None,
+            }
+
+            select_result = self._select_solution(state)
+            if "error" in select_result:
+                yield {
+                    "step": "select_solution",
+                    "status": "error",
+                    "data": {
+                        "constraints": state["constraints"],
+                        "solutions": state["solutions"],
+                        "verification_results": state["verification_results"],
+                    },
+                    "error": select_result["error"],
+                }
+                return
+
+            state.update(select_result)
+
+            # Extract score from selected solution if available
+            selected = state.get("selected_solution")
+            score = selected.get("score") if selected else None
+
+            yield {
+                "step": "select_solution",
+                "status": "complete",
+                "data": {
+                    "constraints": state["constraints"],
+                    "solutions": state["solutions"],
+                    "verification_results": state["verification_results"],
+                    "selected_solution": state["selected_solution"],
+                    "score": score,
+                },
+            }
+
+        except Exception as e:
+            yield {
+                "step": "error",
+                "status": "error",
+                "data": None,
+                "error": f"Error in workflow: {e!s}",
+            }
