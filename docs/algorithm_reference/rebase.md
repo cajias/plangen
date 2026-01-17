@@ -13,26 +13,18 @@ REBASE follows an iterative improvement loop:
 
 ## How It Works
 
-```text
-Initial Solution → Verify → Feedback
-                     ↓
-                 Score: 0.6
-                     ↓
-     ┌──────────────────────────┐
-     │  Refine based on feedback │
-     └──────────────────────────┘
-                     ↓
-Refined Solution → Verify → Feedback
-                     ↓
-                 Score: 0.8
-                     ↓
-     ┌──────────────────────────┐
-     │  Refine based on feedback │
-     └──────────────────────────┘
-                     ↓
-Final Solution → Verify → Feedback
-                     ↓
-                 Score: 0.95 ✓
+```mermaid
+flowchart TD
+    A[Initial Solution] --> B[Verify]
+    B --> C[Score: 0.6]
+    C --> D[Refine based on feedback]
+    D --> E[Refined Solution]
+    E --> F[Verify]
+    F --> G[Score: 0.8]
+    G --> H[Refine based on feedback]
+    H --> I[Final Solution]
+    I --> J[Verify]
+    J --> K[Score: 0.95 ✓]
 ```
 
 ## When to Use
@@ -366,15 +358,12 @@ Iteration 5: Score 0.92 → Final refinements
 
 ### Convergence Pattern
 
-```text
-Score
-1.0 │                          ┌──
-    │                      ┌───┘
-0.8 │               ┌──────┘
-    │         ┌─────┘
-0.6 │   ┌─────┘
-    │───┘
-0.0 └─────────────────────────────→ Iterations
+```mermaid
+xychart-beta
+    title "REBASE Score Convergence"
+    x-axis "Iteration" [1, 2, 3, 4, 5]
+    y-axis "Score" 0 --> 1
+    line [0.45, 0.65, 0.80, 0.90, 0.92]
 ```
 
 ## Advanced Features

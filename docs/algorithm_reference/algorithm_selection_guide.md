@@ -13,20 +13,17 @@ This guide helps you choose the right planning algorithm for your problem. PlanG
 
 ## Decision Tree
 
-```text
-Start Here
-    │
-    ├─ Need automatic algorithm selection?
-    │   └─ YES → Use MixtureOfAlgorithms
-    │
-    ├─ Is the problem simple/straightforward?
-    │   └─ YES → Use BestOfN
-    │
-    ├─ Need to explore multiple reasoning paths?
-    │   └─ YES → Use TreeOfThought
-    │
-    └─ Need iterative refinement?
-        └─ YES → Use REBASE
+```mermaid
+flowchart TD
+    A[Start Here] --> B{Need automatic<br/>algorithm selection?}
+    B -->|YES| C[Use MixtureOfAlgorithms]
+    B -->|NO| D{Is the problem<br/>simple/straightforward?}
+    D -->|YES| E[Use BestOfN]
+    D -->|NO| F{Need to explore multiple<br/>reasoning paths?}
+    F -->|YES| G[Use TreeOfThought]
+    F -->|NO| H{Need iterative<br/>refinement?}
+    H -->|YES| I[Use REBASE]
+    H -->|NO| E
 ```
 
 ## Algorithm Comparison
