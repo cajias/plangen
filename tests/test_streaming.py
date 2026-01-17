@@ -2,8 +2,6 @@
 
 from unittest.mock import MagicMock, patch
 
-import pytest
-
 from plangen import PlanGEN
 from plangen.api import PlanGen
 from plangen.models import OpenAIModelInterface
@@ -18,10 +16,14 @@ class TestModelStreaming:
         from plangen.models.base_model import BaseModelInterface
 
         class TestModel(BaseModelInterface):
-            def generate(self, prompt, system_message=None, temperature=None, max_tokens=None):
+            def generate(
+                self, prompt, system_message=None, temperature=None, max_tokens=None
+            ):
                 return "Complete response"
 
-            def batch_generate(self, prompts, system_message=None, temperature=None, max_tokens=None):
+            def batch_generate(
+                self, prompts, system_message=None, temperature=None, max_tokens=None
+            ):
                 return [self.generate(p) for p in prompts]
 
         # Create instance and test
@@ -130,17 +132,13 @@ class TestPlanGENStreaming:
         assert "select_solution" in step_names
 
         # Verify each step has in_progress and complete status
-        constraint_updates = [
-            u for u in updates if u["step"] == "extract_constraints"
-        ]
+        constraint_updates = [u for u in updates if u["step"] == "extract_constraints"]
         assert len(constraint_updates) == 2
         assert constraint_updates[0]["status"] == "in_progress"
         assert constraint_updates[1]["status"] == "complete"
         assert constraint_updates[1]["data"]["constraints"] == "Test constraints"
 
-        solution_updates = [
-            u for u in updates if u["step"] == "generate_solutions"
-        ]
+        solution_updates = [u for u in updates if u["step"] == "generate_solutions"]
         assert len(solution_updates) == 2
         assert solution_updates[0]["status"] == "in_progress"
         assert solution_updates[1]["status"] == "complete"
@@ -149,16 +147,12 @@ class TestPlanGENStreaming:
             "Solution 2",
         ]
 
-        verification_updates = [
-            u for u in updates if u["step"] == "verify_solutions"
-        ]
+        verification_updates = [u for u in updates if u["step"] == "verify_solutions"]
         assert len(verification_updates) == 2
         assert verification_updates[0]["status"] == "in_progress"
         assert verification_updates[1]["status"] == "complete"
 
-        selection_updates = [
-            u for u in updates if u["step"] == "select_solution"
-        ]
+        selection_updates = [u for u in updates if u["step"] == "select_solution"]
         assert len(selection_updates) == 2
         assert selection_updates[0]["status"] == "in_progress"
         assert selection_updates[1]["status"] == "complete"
@@ -207,9 +201,7 @@ class TestPlanGENStreaming:
 
         # Configure mocks
         mock_constraint_agent.extract_constraints.return_value = "Test constraints"
-        mock_solution_agent.generate_solutions.side_effect = Exception(
-            "Solution error"
-        )
+        mock_solution_agent.generate_solutions.side_effect = Exception("Solution error")
 
         # Create PlanGEN instance
         plangen = PlanGEN(
@@ -223,14 +215,116 @@ class TestPlanGENStreaming:
         updates = list(plangen.solve_stream("Test problem"))
 
         # Find solution generation updates
-        solution_updates = [
-            u for u in updates if u["step"] == "generate_solutions"
-        ]
+        solution_updates = [u for u in updates if u["step"] == "generate_solutions"]
 
         # Verify error was captured
         assert len(solution_updates) == 2
         assert solution_updates[1]["status"] == "error"
         assert "Solution error" in solution_updates[1]["error"]
+
+    def test_solve_stream_with_verification_error(self):
+        """Test streaming with error in solution verification."""
+        # Setup mocks
+        mock_model = MagicMock()
+        mock_prompt_manager = MagicMock()
+        mock_constraint_agent = MagicMock()
+        mock_solution_agent = MagicMock()
+        mock_verification_agent = MagicMock()
+
+        # Configure mocks
+        mock_constraint_agent.extract_constraints.return_value = "Test constraints"
+        mock_solution_agent.generate_solutions.return_value = [
+            "Solution 1",
+            "Solution 2",
+        ]
+        mock_verification_agent.verify_solutions.side_effect = Exception(
+            "Verification error"
+        )
+
+        # Create PlanGEN instance
+        plangen = PlanGEN(
+            model=mock_model,
+            prompt_manager=mock_prompt_manager,
+        )
+        plangen.constraint_agent = mock_constraint_agent
+        plangen.solution_agent = mock_solution_agent
+        plangen.verification_agent = mock_verification_agent
+
+        # Test streaming
+        updates = list(plangen.solve_stream("Test problem"))
+
+        # Find verification updates
+        verification_updates = [u for u in updates if u["step"] == "verify_solutions"]
+
+        # Verify error was captured
+        assert len(verification_updates) == 2
+        assert verification_updates[0]["status"] == "in_progress"
+        assert verification_updates[1]["status"] == "error"
+        assert "Verification error" in verification_updates[1]["error"]
+
+        # Verify accumulated data is preserved in error update
+        assert verification_updates[1]["data"]["constraints"] == "Test constraints"
+        assert verification_updates[1]["data"]["solutions"] == [
+            "Solution 1",
+            "Solution 2",
+        ]
+
+    def test_solve_stream_with_selection_error(self):
+        """Test streaming with error in solution selection."""
+        # Setup mocks
+        mock_model = MagicMock()
+        mock_prompt_manager = MagicMock()
+        mock_constraint_agent = MagicMock()
+        mock_solution_agent = MagicMock()
+        mock_verification_agent = MagicMock()
+        mock_selection_agent = MagicMock()
+
+        # Configure mocks
+        mock_constraint_agent.extract_constraints.return_value = "Test constraints"
+        mock_solution_agent.generate_solutions.return_value = [
+            "Solution 1",
+            "Solution 2",
+        ]
+        mock_verification_agent.verify_solutions.return_value = [
+            "Verification 1",
+            "Verification 2",
+        ]
+        mock_selection_agent.select_best_solution.side_effect = Exception(
+            "Selection error"
+        )
+
+        # Create PlanGEN instance
+        plangen = PlanGEN(
+            model=mock_model,
+            prompt_manager=mock_prompt_manager,
+        )
+        plangen.constraint_agent = mock_constraint_agent
+        plangen.solution_agent = mock_solution_agent
+        plangen.verification_agent = mock_verification_agent
+        plangen.selection_agent = mock_selection_agent
+
+        # Test streaming
+        updates = list(plangen.solve_stream("Test problem"))
+
+        # Find selection updates
+        selection_updates = [u for u in updates if u["step"] == "select_solution"]
+
+        # Verify error was captured
+        assert len(selection_updates) == 2
+        assert selection_updates[0]["status"] == "in_progress"
+        assert selection_updates[1]["status"] == "error"
+        assert "Selection error" in selection_updates[1]["error"]
+
+        # Verify all accumulated data is preserved in error update
+        assert selection_updates[1]["data"]["constraints"] == "Test constraints"
+        assert selection_updates[1]["data"]["solutions"] == [
+            "Solution 1",
+            "Solution 2",
+        ]
+        assert selection_updates[1]["data"]["verification_results"] == [
+            "Verification 1",
+            "Verification 2",
+        ]
 
 
 class TestAPIStreaming:
