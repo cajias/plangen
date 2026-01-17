@@ -559,32 +559,16 @@ class Verifiers:
         """Create a verifier for a specific domain.
 
         Args:
-            verifier_type: Verifier type ('calendar', 'math', 'code', etc.)
+            verifier_type: Verifier type ('math', 'code', etc.)
             **kwargs: Verifier-specific parameters
 
         Returns:
             Configured verifier instance
         """
-        if verifier_type == "calendar":
-            return cls.calendar(**kwargs)
         if verifier_type == "math":
             return cls.math(**kwargs)
         msg = f"Unknown verifier type: {verifier_type}"
         raise ValueError(msg)
-
-    @classmethod
-    def calendar(cls: type[Self], **kwargs: object) -> VerifierProtocol:
-        """Create a calendar scheduling verifier.
-
-        Args:
-            **kwargs: Calendar verifier parameters
-
-        Returns:
-            Calendar verifier instance
-        """
-        from .examples.calendar import CalendarVerifier
-
-        return CalendarVerifier(**kwargs)
 
     @classmethod
     def math(cls: type[Self], **kwargs: object) -> VerifierProtocol:
