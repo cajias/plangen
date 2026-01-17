@@ -198,6 +198,7 @@ for chunk in model.generate_stream("Your prompt here"):
 ```
 
 This is useful when:
+
 - Building custom workflows
 - Displaying token-by-token generation to users
 - Implementing custom agents with streaming
@@ -213,11 +214,13 @@ print(result["selected_solution"])
 ```
 
 **Pros:**
+
 - Simpler API
 - Get complete result in one call
 - Better for batch processing
 
 **Cons:**
+
 - No progress feedback
 - Can't access intermediate results
 - Must wait for entire workflow
@@ -231,12 +234,14 @@ for update in plangen.solve_stream(problem):
 ```
 
 **Pros:**
+
 - Real-time progress updates
 - Access to intermediate results
 - Better user experience
 - Can implement early termination
 
 **Cons:**
+
 - More complex to use
 - Requires iteration handling
 - Must track state yourself
