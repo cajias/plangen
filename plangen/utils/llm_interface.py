@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import os
-from typing import Self
+from typing_extensions import Self
 
 
 class LLMInterface:

@@ -6,7 +6,8 @@ PlanGEN algorithms and agents.
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Self
+from typing import Any
+from typing_extensions import Self
 
 from jinja2 import Environment, FileSystemLoader, TemplateNotFound, select_autoescape
 

@@ -1,7 +1,8 @@
 """Base verifier interface for domain-agnostic verification."""
 
 from abc import ABC, abstractmethod
-from typing import Any, Self
+from typing import Any
+from typing_extensions import Self
 
 from plangen.types import VerificationResult
 

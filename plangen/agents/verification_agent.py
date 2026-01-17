@@ -1,7 +1,7 @@
 """Verification agent for PlanGEN."""
 
 
-from typing import Self
+from typing_extensions import Self
 
 from plangen.models import BaseModelInterface
 from plangen.prompts import PromptManager

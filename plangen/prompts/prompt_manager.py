@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Self
+from typing_extensions import Self
 
 import jinja2
 

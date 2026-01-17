@@ -2,7 +2,8 @@
 from __future__ import annotations
 
 import os
-from typing import Self
+from typing import Iterator
+from typing_extensions import Self
 
 from openai import OpenAI
 from tenacity import retry, stop_after_attempt, wait_random_exponential
@@ -104,3 +105,41 @@ class OpenAIModelInterface(BaseModelInterface):
             )
             for prompt in prompts
         ]
+
+    @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(6))
+    def generate_stream(
+        self: Self,
+        prompt: str,
+        system_message: str | None = None,
+        temperature: float | None = None,
+        max_tokens: int | None = None,
+    ) -> Iterator[str]:
+        """Generate text from the OpenAI model with streaming.
+
+        Args:
+            prompt: The prompt to send to the model
+            system_message: Optional system message to set context
+            temperature: Optional temperature override
+            max_tokens: Optional max tokens override
+
+        Yields:
+            Chunks of generated text from the model
+        """
+        messages = []
+
+        if system_message:
+            messages.append({"role": "system", "content": system_message})
+
+        messages.append({"role": "user", "content": prompt})
+
+        stream = self.client.chat.completions.create(
+            model=self.model_name,
+            messages=messages,
+            temperature=temperature or self.temperature,
+            max_tokens=max_tokens or self.max_tokens,
+            stream=True,
+        )
+
+        for chunk in stream:
+            if chunk.choices[0].delta.content is not None:
+                yield chunk.choices[0].delta.content

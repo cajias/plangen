@@ -23,7 +23,8 @@ Example:
 """
 from __future__ import annotations
 
-from typing import Any, Self
+from typing import Any
+from typing_extensions import Self
 
 from plangen.agents.selection_agent import SelectionAgent
 from plangen.utils.template_loader import TemplateLoader

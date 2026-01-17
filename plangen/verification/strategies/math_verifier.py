@@ -2,7 +2,8 @@
 from __future__ import annotations
 
 import re
-from typing import Any, Self
+from typing import Any
+from typing_extensions import Self
 
 from plangen.verification.base_verifier import BaseVerifier
 
