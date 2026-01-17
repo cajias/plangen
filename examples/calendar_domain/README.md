@@ -43,6 +43,7 @@ print(f"Reason: {result['reason']}")
 ## Template Customization
 
 The `templates/rebase/` directory contains calendar-specific templates for:
+
 - Step generation
 - Solution verification
 - Reward calculation

@@ -1,0 +1,29 @@
+# Lychee link checker configuration
+# https://lychee.cli.rs/
+
+# Skip localhost and internal URLs
+exclude = [
+  "^https?://localhost",
+  "^https?://127\\.0\\.0\\.1",
+  "^https?://host\\.docker\\.internal",
+  "^https?://0\\.0\\.0\\.0",
+  # Exclude GitHub Pages URL until docs are deployed
+  "^https://cajias\\.github\\.io/plangen",
+  # Exclude LICENSE link until file is created
+  "^https://github\\.com/cajias/plangen/blob/main/LICENSE",
+]
+
+# Exclude paths
+exclude_path = ["node_modules", "dist", "site", ".venv", ".git"]
+
+# Accept these status codes as valid
+accept = [200, 201, 204, 301, 302, 307, 308, 429]
+
+# Retry failed requests
+max_retries = 2
+
+# Timeout per request
+timeout = 20
+
+# Don't check mail addresses
+include_mail = false

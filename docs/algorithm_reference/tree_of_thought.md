@@ -13,15 +13,20 @@ TreeOfThought builds a search tree where:
 
 ## How It Works
 
-```
-                    Initial Problem
-                          |
-        ┌─────────────────┼─────────────────┐
-        │                 │                 │
-    Branch 1          Branch 2          Branch 3
-        │                 │                 │
-    ┌───┼───┐        ┌───┼───┐        ┌───┼───┐
-   S1  S2  S3       S4  S5  S6       S7  S8  S9
+```mermaid
+graph TD
+    A[Initial Problem] --> B1[Branch 1]
+    A --> B2[Branch 2]
+    A --> B3[Branch 3]
+    B1 --> S1[S1]
+    B1 --> S2[S2]
+    B1 --> S3[S3]
+    B2 --> S4[S4]
+    B2 --> S5[S5]
+    B2 --> S6[S6]
+    B3 --> S7[S7]
+    B3 --> S8[S8]
+    B3 --> S9[S9]
 ```
 
 **Process:**
@@ -42,6 +47,7 @@ TreeOfThought excels at:
 - **Tasks benefiting from backtracking** when approaches fail
 
 Avoid for:
+
 - Simple, straightforward problems
 - When speed is critical
 - Problems with clear single solution path
@@ -276,6 +282,7 @@ When using a GraphRenderer observer, TreeOfThought generates:
 ### Time Complexity
 
 `O(b^d * k)` where:
+
 - `b` = branching_factor
 - `d` = max_depth
 - `k` = beam_width
@@ -283,6 +290,7 @@ When using a GraphRenderer observer, TreeOfThought generates:
 ### API Calls
 
 Approximately: `branching_factor * max_depth * 2` calls
+
 - One for generation
 - One for evaluation
 

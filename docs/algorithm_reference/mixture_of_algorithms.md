@@ -14,36 +14,24 @@ MixtureOfAlgorithms acts as an intelligent orchestrator:
 
 ## How It Works
 
-```
-Problem → Analyze Characteristics
-              ↓
-    ┌─────────┴─────────┐
-    │   Simple?         │
-    │   • Yes → BestOfN │
-    │   • No  → Continue │
-    └─────────┬─────────┘
-              ↓
-    ┌─────────┴──────────┐
-    │   Need Exploration? │
-    │   • Yes → ToT      │
-    │   • No  → Continue  │
-    └─────────┬──────────┘
-              ↓
-    ┌─────────┴──────────┐
-    │   Need Refinement?  │
-    │   • Yes → REBASE   │
-    │   • No  → BestOfN  │
-    └─────────┬──────────┘
-              ↓
-         Execute Selected
-              ↓
-         Monitor Results
-              ↓
-    ┌─────────┴─────────┐
-    │   Poor Results?    │
-    │   • Yes → Switch   │
-    │   • No  → Continue │
-    └───────────────────┘
+```mermaid
+flowchart TD
+    A[Problem] --> B[Analyze Characteristics]
+    B --> C{Simple?}
+    C -->|Yes| D[BestOfN]
+    C -->|No| E{Need Exploration?}
+    E -->|Yes| F[TreeOfThought]
+    E -->|No| G{Need Refinement?}
+    G -->|Yes| H[REBASE]
+    G -->|No| D
+    D --> I[Execute Selected Algorithm]
+    F --> I
+    H --> I
+    I --> J[Monitor Results]
+    J --> K{Poor Results?}
+    K -->|Yes| L[Switch Algorithm]
+    L --> B
+    K -->|No| M[Return Solution]
 ```
 
 ## When to Use
@@ -56,6 +44,7 @@ MixtureOfAlgorithms is ideal for:
 - **Prototyping** to find the best algorithm for later optimization
 
 Best for:
+
 - Applications with varied problems
 - When you want optimal results automatically
 - Rapid development and testing
@@ -286,6 +275,7 @@ Depends on selected algorithm(s):
 ### API Calls
 
 Variable based on:
+
 - Number of algorithm switches
 - Algorithms selected
 - Problem complexity

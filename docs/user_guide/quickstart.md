@@ -92,6 +92,7 @@ result = plangen.solve(
 ```
 
 Available algorithms are:
+
 - `"best_of_n"` - Generates multiple plans and selects the best one
 - `"tree_of_thought"` - Explores multiple reasoning paths in a tree structure
 - `"rebase"` - Uses recursive refinement to improve plans

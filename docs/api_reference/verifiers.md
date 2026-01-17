@@ -22,9 +22,11 @@ def calendar() -> BaseVerifier
 Create a calendar scheduling verifier.
 
 **Returns:**
+
 - Verifier specialized for calendar scheduling problems
 
 **Example:**
+
 ```python
 verifier = Verifiers.calendar()
 plangen.solve(problem, verifier=verifier)
@@ -40,9 +42,11 @@ def math() -> BaseVerifier
 Create a mathematical problem verifier.
 
 **Returns:**
+
 - Verifier specialized for math problems
 
 **Example:**
+
 ```python
 verifier = Verifiers.math()
 plangen.solve(problem, verifier=verifier)
@@ -58,9 +62,11 @@ def algorithm() -> BaseVerifier
 Create an algorithm design verifier.
 
 **Returns:**
+
 - Verifier specialized for algorithm design problems
 
 **Example:**
+
 ```python
 verifier = Verifiers.algorithm()
 plangen.solve(problem, verifier=verifier)
@@ -86,14 +92,17 @@ def verify_solution(
 Verify a solution against constraints.
 
 **Parameters:**
+
 - `problem`: Problem statement
 - `solution`: Proposed solution
 - `constraints`: List of constraints
 
 **Returns:**
+
 - Tuple of (feedback: str, score: float)
 
 **Example:**
+
 ```python
 feedback, score = verifier.verify_solution(
     problem="Schedule a meeting...",
@@ -111,12 +120,15 @@ def is_applicable(self, problem: str) -> bool
 Check if verifier applies to the problem.
 
 **Parameters:**
+
 - `problem`: Problem statement
 
 **Returns:**
+
 - True if verifier is applicable, False otherwise
 
 **Example:**
+
 ```python
 if verifier.is_applicable(problem):
     feedback, score = verifier.verify_solution(problem, solution, constraints)
@@ -131,12 +143,15 @@ def extract_domain_constraints(self, problem: str) -> List[str]
 Extract domain-specific constraints from problem.
 
 **Parameters:**
+
 - `problem`: Problem statement
 
 **Returns:**
+
 - List of domain-specific constraints
 
 **Example:**
+
 ```python
 constraints = verifier.extract_domain_constraints(problem)
 ```
@@ -203,10 +218,12 @@ def register(cls, name: str, verifier_class: Type[BaseVerifier]) -> None
 Register a custom verifier.
 
 **Parameters:**
+
 - `name`: Name for the verifier
 - `verifier_class`: Verifier class
 
 **Example:**
+
 ```python
 from plangen.verification import VerifierFactory
 
@@ -223,12 +240,15 @@ def get(cls, name: str) -> BaseVerifier
 Get a registered verifier by name.
 
 **Parameters:**
+
 - `name`: Verifier name
 
 **Returns:**
+
 - Verifier instance
 
 **Example:**
+
 ```python
 verifier = VerifierFactory.get("custom")
 ```
@@ -243,12 +263,15 @@ def get_applicable(cls, problem: str) -> Optional[BaseVerifier]
 Get the first applicable verifier for a problem.
 
 **Parameters:**
+
 - `problem`: Problem statement
 
 **Returns:**
+
 - Applicable verifier or None
 
 **Example:**
+
 ```python
 verifier = VerifierFactory.get_applicable(problem)
 if verifier:

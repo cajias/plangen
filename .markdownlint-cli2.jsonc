@@ -1,0 +1,8 @@
+{
+  // markdownlint-cli2 configuration
+  "config": {
+    "extends": ".markdownlint.json"
+  },
+  "globs": ["**/*.md", "!node_modules/**", "!dist/**", "!site/**", "!.venv/**"],
+  "ignores": ["node_modules", "dist", "site", ".venv"]
+}

@@ -21,18 +21,23 @@ To quickly get started with PlanGEN, check out the [Installation Guide](user_gui
 ## Documentation Sections
 
 ### [User Guide](user_guide/index.md)
+
 Step-by-step guides for using PlanGEN, including installation, configuration, and common use cases.
 
 ### [API Reference](api_reference/index.md)
+
 Complete reference for all public classes, methods, and functions in the PlanGEN framework.
 
 ### [Algorithm Reference](algorithm_reference/index.md)
+
 Detailed explanation of the planning algorithms available in PlanGEN, including their parameters and use cases.
 
 ### [Examples](examples/index.md)
+
 Code examples for various scenarios and use cases.
 
 ### [API Design and Orchestration Integration](API_DESIGN_AND_ORCHESTRATION.md)
+
 Comprehensive review of API design, compatibility with agent orchestration frameworks, and recommendations for integration. Includes guides for LangChain, LangGraph, and other frameworks.
 
 ## Support

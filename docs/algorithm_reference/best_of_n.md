@@ -11,6 +11,7 @@ The BestOfN algorithm is one of the simplest and most effective planning algorit
 ## When to Use
 
 BestOfN is well-suited for:
+
 - Simple to moderately complex problems
 - When you want to explore diverse solutions
 - When you need a quick solution without complex reasoning paths

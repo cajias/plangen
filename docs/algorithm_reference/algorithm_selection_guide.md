@@ -13,20 +13,17 @@ This guide helps you choose the right planning algorithm for your problem. PlanG
 
 ## Decision Tree
 
-```
-Start Here
-    │
-    ├─ Need automatic algorithm selection?
-    │   └─ YES → Use MixtureOfAlgorithms
-    │
-    ├─ Is the problem simple/straightforward?
-    │   └─ YES → Use BestOfN
-    │
-    ├─ Need to explore multiple reasoning paths?
-    │   └─ YES → Use TreeOfThought
-    │
-    └─ Need iterative refinement?
-        └─ YES → Use REBASE
+```mermaid
+flowchart TD
+    A[Start Here] --> B{Need automatic<br/>algorithm selection?}
+    B -->|YES| C[Use MixtureOfAlgorithms]
+    B -->|NO| D{Is the problem<br/>simple/straightforward?}
+    D -->|YES| E[Use BestOfN]
+    D -->|NO| F{Need to explore multiple<br/>reasoning paths?}
+    F -->|YES| G[Use TreeOfThought]
+    F -->|NO| H{Need iterative<br/>refinement?}
+    H -->|YES| I[Use REBASE]
+    H -->|NO| E
 ```
 
 ## Algorithm Comparison
@@ -34,28 +31,33 @@ Start Here
 ### BestOfN
 
 **How it works:**
+
 1. Generate N independent solutions
 2. Evaluate each solution
 3. Select the best one
 
 **Strengths:**
+
 - Simple and fast
 - Highly parallelizable
 - Good for diverse solution space
 - Low complexity
 
 **Weaknesses:**
+
 - No interaction between solutions
 - No refinement
 - May require many samples for complex problems
 
 **Best for:**
+
 - Simple to moderate problems
 - When speed is important
 - When you want diverse solutions
 - Prototyping and testing
 
 **Example:**
+
 ```python
 result = plangen.solve(
     problem,
@@ -68,6 +70,7 @@ result = plangen.solve(
 ### TreeOfThought
 
 **How it works:**
+
 1. Start with initial reasoning
 2. Branch into multiple paths
 3. Evaluate and prune branches
@@ -75,23 +78,27 @@ result = plangen.solve(
 5. Select best final solution
 
 **Strengths:**
+
 - Explores multiple reasoning paths
 - Can backtrack from dead ends
 - Good for complex problems
 - Structured exploration
 
 **Weaknesses:**
+
 - Slower than BestOfN
 - More API calls
 - Can be overkill for simple problems
 
 **Best for:**
+
 - Complex reasoning tasks
 - Problems with multiple approaches
 - When exploration is valuable
 - Multi-step problems
 
 **Example:**
+
 ```python
 result = plangen.solve(
     problem,
@@ -105,29 +112,34 @@ result = plangen.solve(
 ### REBASE
 
 **How it works:**
+
 1. Generate initial solution
 2. Verify and get feedback
 3. Refine based on feedback
 4. Repeat until convergence or max iterations
 
 **Strengths:**
+
 - Iterative improvement
 - Learns from mistakes
 - Can achieve high quality
 - Good for optimization
 
 **Weaknesses:**
+
 - Slowest algorithm
 - Most API calls
 - May get stuck in local optima
 
 **Best for:**
+
 - Problems needing refinement
 - When quality is critical
 - Optimization problems
 - When initial solutions are incomplete
 
 **Example:**
+
 ```python
 result = plangen.solve(
     problem,
@@ -140,29 +152,34 @@ result = plangen.solve(
 ### MixtureOfAlgorithms
 
 **How it works:**
+
 1. Analyze problem characteristics
 2. Select appropriate algorithm
 3. Can switch algorithms mid-execution
 4. Returns best result
 
 **Strengths:**
+
 - Automatic selection
 - Adapts to problem
 - Often best performance
 - No tuning needed
 
 **Weaknesses:**
+
 - Less control
 - Harder to debug
 - Overhead of selection
 
 **Best for:**
+
 - Unknown problem types
 - Production systems
 - When you want "best" automatically
 - Diverse problem sets
 
 **Example:**
+
 ```python
 result = plangen.solve(
     problem,

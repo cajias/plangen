@@ -19,12 +19,14 @@ def __init__(
 ```
 
 **Parameters:**
+
 - `output_dir`: Directory to save visualizations
 - `format`: Output format ('png', 'svg', 'pdf')
 - `dpi`: Resolution for raster formats
 - `figsize`: Figure size as (width, height) in inches
 
 **Example:**
+
 ```python
 from plangen.visualization import GraphRenderer
 
@@ -47,10 +49,12 @@ def notify(self, event: str, data: Dict[str, Any]) -> None
 Receive notifications from algorithms during execution.
 
 **Parameters:**
+
 - `event`: Event type (e.g., "plan_generated", "plan_verified")
 - `data`: Event data dictionary
 
 **Example:**
+
 ```python
 # Typically called automatically by algorithms
 algorithm.add_observer(renderer)
@@ -69,6 +73,7 @@ def render_tree(
 Render a tree structure visualization.
 
 **Parameters:**
+
 - `tree_data`: Tree structure data
 - `filename`: Output filename
 
@@ -85,6 +90,7 @@ def render_scores(
 Render score progression plot.
 
 **Parameters:**
+
 - `scores`: List of scores over time
 - `filename`: Output filename
 

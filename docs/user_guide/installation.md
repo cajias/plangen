@@ -5,6 +5,7 @@ This guide will help you install PlanGEN and set up your environment.
 ## Requirements
 
 PlanGEN requires:
+
 - Python 3.9 or later (up to 3.12)
 - Dependencies listed in `pyproject.toml`
 
@@ -15,22 +16,26 @@ PlanGEN requires:
 [Poetry](https://python-poetry.org/) is the recommended way to install PlanGEN, as it handles dependency management and virtual environments automatically.
 
 1. First, install Poetry if you don't have it already:
+
    ```bash
    curl -sSL https://install.python-poetry.org | python3 -
    ```
 
 2. Clone the repository:
+
    ```bash
    git clone https://github.com/yourusername/plangen.git
    cd plangen
    ```
 
 3. Install dependencies and create a virtual environment:
+
    ```bash
    poetry install
    ```
 
 4. Activate the virtual environment:
+
    ```bash
    poetry shell
    ```
@@ -40,18 +45,21 @@ PlanGEN requires:
 Alternatively, you can install PlanGEN using pip:
 
 1. Clone the repository:
+
    ```bash
    git clone https://github.com/yourusername/plangen.git
    cd plangen
    ```
 
 2. Create a virtual environment:
+
    ```bash
    python -m venv .venv
    source .venv/bin/activate  # On Windows: .venv\Scripts\activate
    ```
 
 3. Install the package in development mode:
+
    ```bash
    pip install -e .
    ```
@@ -70,7 +78,7 @@ export OPENAI_API_KEY=your-api-key-here
 
 For persistent configuration, add it to your `.env` file:
 
-```
+```shell
 OPENAI_API_KEY=your-api-key-here
 ```
 
@@ -84,7 +92,7 @@ aws configure
 
 Alternatively, you can set environment variables or use a `.env` file:
 
-```
+```shell
 AWS_ACCESS_KEY_ID=your-access-key
 AWS_SECRET_ACCESS_KEY=your-secret-key
 AWS_REGION=us-east-1

@@ -67,7 +67,7 @@ result = plangen.solve(problem)
 
 Create a custom template directory:
 
-```
+```text
 my_prompts/
 ├── constraint_extraction.j2
 ├── solution_generation.j2

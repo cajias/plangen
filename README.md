@@ -25,6 +25,7 @@ PlanGEN is a framework for solving complex problems using a multi-agent approach
 📚 **[View Full Documentation](https://cajias.github.io/plangen)** - Complete guides, API reference, and examples
 
 **Quick Links:**
+
 - [User Guide](docs/user_guide/index.md): Installation, configuration, and usage guides
 - [API Reference](docs/api_reference/index.md): Complete API documentation
 - [Algorithm Reference](docs/algorithm_reference/index.md): Detailed algorithm explanations with selection guide
