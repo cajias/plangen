@@ -413,4 +413,4 @@ If you're integrating PlanGEN into a new framework, please share:
 - Workarounds you develop
 - Feature requests for better integration
 
-For feature requests and roadmap discussions, see the [GitHub Issues](https://github.com/plangen/plangen/issues).
+For feature requests and roadmap discussions, see the [GitHub Issues](https://github.com/cajias/plangen/issues).

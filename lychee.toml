@@ -7,6 +7,10 @@ exclude = [
   "^https?://127\\.0\\.0\\.1",
   "^https?://host\\.docker\\.internal",
   "^https?://0\\.0\\.0\\.0",
+  # Exclude GitHub Pages URL until docs are deployed
+  "^https://cajias\\.github\\.io/plangen",
+  # Exclude LICENSE link until file is created
+  "^https://github\\.com/cajias/plangen/blob/main/LICENSE",
 ]
 
 # Exclude paths
