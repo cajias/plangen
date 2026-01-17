@@ -66,6 +66,7 @@ if __name__ == "__main__":
 ## Step-by-Step Explanation
 
 1. **Import the necessary modules:**
+
    ```python
    import json
    import os
@@ -74,18 +75,23 @@ if __name__ == "__main__":
    ```
 
 2. **Load environment variables:**
+
    ```python
    load_dotenv()
    ```
+
    This loads API keys from a `.env` file if one exists.
 
 3. **Create a PlanGen instance:**
+
    ```python
    plangen = PlanGen.create()
    ```
+
    This creates a PlanGen instance with default settings. It will automatically use the OpenAI API if an API key is available, or fall back to AWS Bedrock if AWS credentials are available.
 
 4. **Define a problem:**
+
    ```python
    problem = """
    Design an algorithm to find the kth largest element in an unsorted array.
@@ -94,9 +100,11 @@ if __name__ == "__main__":
    ```
 
 5. **Solve the problem:**
+
    ```python
    result = plangen.solve(problem)
    ```
+
    This will:
    - Extract constraints from the problem
    - Generate multiple solutions
@@ -104,12 +112,14 @@ if __name__ == "__main__":
    - Select the best solution
 
 6. **Access the results:**
+
    ```python
    constraints = result.get("constraints", [])
    selected_solution = result.get("selected_solution", "No solution found")
    ```
 
 7. **Save the results:**
+
    ```python
    with open("plangen_results.json", "w") as f:
        json.dump(result, f, indent=2)
@@ -150,6 +160,7 @@ result = plangen.solve(
 ```
 
 Available algorithms are:
+
 - `"best_of_n"` - Generates multiple plans and selects the best one
 - `"tree_of_thought"` - Explores multiple reasoning paths in a tree structure
 - `"rebase"` - Uses recursive refinement to improve plans

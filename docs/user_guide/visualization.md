@@ -170,6 +170,7 @@ with open("./visualizations/metadata.json", "w") as f:
 ### Tree Structure
 
 The tree structure visualization shows:
+
 - Nodes representing reasoning steps
 - Edges showing branching decisions
 - Colors indicating scores
@@ -178,6 +179,7 @@ The tree structure visualization shows:
 ### Score Progression
 
 Score progression plots show:
+
 - X-axis: Iteration or step number
 - Y-axis: Score (0.0 to 1.0)
 - Line showing improvement over time
@@ -186,6 +188,7 @@ Score progression plots show:
 ### Comparison Charts
 
 For BestOfN, comparison charts show:
+
 - Bar chart of all plan scores
 - Selected plan highlighted
 - Distribution of scores

@@ -22,12 +22,14 @@ This document provides a comprehensive review of the PlanGEN API design and reco
   - `ModelProtocol` - Custom model implementations
   - `VerifierProtocol` - Custom verifier implementations
 - **Fluent Factory Methods**: Multiple ways to initialize
+
   ```python
   plangen = PlanGen.create()                              # Auto-detect
   plangen = PlanGen.with_openai(model_name="gpt-4o")     # Explicit
   plangen = PlanGen.with_bedrock(model_id="...")         # Alternative
   plangen = PlanGen.with_model(custom_model)             # Custom
   ```
+
 - **Consistent Method Signatures**: All methods well-documented with type hints
 
 ### Known Limitations
@@ -64,6 +66,7 @@ async def my_orchestration():
 ```
 
 **Workaround** (not ideal):
+
 ```python
 from concurrent.futures import ThreadPoolExecutor
 
@@ -368,6 +371,7 @@ orchestration_graph.add_edge("planning", "refine_solution")
 ### For Existing Code (No Breaking Changes)
 
 The recommended improvements are **backward compatible**:
+
 - New async methods alongside sync versions
 - New callbacks are optional
 - TypedDict is hint-only, doesn't affect runtime
@@ -383,14 +387,16 @@ The recommended improvements are **backward compatible**:
 
 ## 7. Decision Matrix: When to Use PlanGEN
 
-### Use PlanGEN When:
+### Use PlanGEN When
+
 ✅ You need multi-step problem decomposition
 ✅ You want constraint extraction + solution generation + verification
 ✅ You're building synchronous systems
 ✅ You need multiple solution candidates
 ✅ You want custom verifiers for specific domains
 
-### Don't Use PlanGEN When:
+### Don't Use PlanGEN When
+
 ❌ You need pure async/streaming LLM interaction
 ❌ You need real-time token streaming
 ❌ You require multi-turn conversations
@@ -402,8 +408,9 @@ The recommended improvements are **backward compatible**:
 ## 8. Feedback and Contributions
 
 If you're integrating PlanGEN into a new framework, please share:
+
 - Challenges you encounter
 - Workarounds you develop
 - Feature requests for better integration
 
-See [PENDING_TASKS.md](PENDING_TASKS.md) for the roadmap of improvements.
+For feature requests and roadmap discussions, see the [GitHub Issues](https://github.com/plangen/plangen/issues).

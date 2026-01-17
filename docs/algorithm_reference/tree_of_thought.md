@@ -13,7 +13,7 @@ TreeOfThought builds a search tree where:
 
 ## How It Works
 
-```
+```text
                     Initial Problem
                           |
         ┌─────────────────┼─────────────────┐
@@ -42,6 +42,7 @@ TreeOfThought excels at:
 - **Tasks benefiting from backtracking** when approaches fail
 
 Avoid for:
+
 - Simple, straightforward problems
 - When speed is critical
 - Problems with clear single solution path
@@ -276,6 +277,7 @@ When using a GraphRenderer observer, TreeOfThought generates:
 ### Time Complexity
 
 `O(b^d * k)` where:
+
 - `b` = branching_factor
 - `d` = max_depth
 - `k` = beam_width
@@ -283,6 +285,7 @@ When using a GraphRenderer observer, TreeOfThought generates:
 ### API Calls
 
 Approximately: `branching_factor * max_depth * 2` calls
+
 - One for generation
 - One for evaluation
 

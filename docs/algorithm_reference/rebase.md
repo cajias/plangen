@@ -13,7 +13,7 @@ REBASE follows an iterative improvement loop:
 
 ## How It Works
 
-```
+```text
 Initial Solution → Verify → Feedback
                      ↓
                  Score: 0.6
@@ -45,6 +45,7 @@ REBASE is ideal for:
 - **Quality-critical applications** where time allows for refinement
 
 Avoid for:
+
 - Simple problems solvable in one pass
 - Time-sensitive applications
 - Problems with binary correctness (either right or wrong)
@@ -321,6 +322,7 @@ metadata = {
 ### API Calls
 
 Approximately: `2 * iterations` calls
+
 - One for refinement generation
 - One for verification
 
@@ -364,7 +366,7 @@ Iteration 5: Score 0.92 → Final refinements
 
 ### Convergence Pattern
 
-```
+```text
 Score
 1.0 │                          ┌──
     │                      ┌───┘

@@ -27,7 +27,7 @@ export OPENAI_API_KEY="your-api-key-here"
 
 Or in a `.env` file:
 
-```
+```shell
 OPENAI_API_KEY=your-api-key-here
 ```
 

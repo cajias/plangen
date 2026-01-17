@@ -4,7 +4,7 @@ This file provides an overview of the documentation structure for the PlanGEN pr
 
 ## Documentation Directory Structure
 
-```
+```text
 docs/
 ├── index.md                      # Main documentation page
 ├── DOCUMENTATION_STRUCTURE.md    # This file
@@ -47,7 +47,7 @@ docs/
 
 Additionally, we've added new example files:
 
-```
+```text
 examples/
 ├── api_quickstart.py             # Quick start example using the new API
 └── api_best_of_n.py              # BestOfN algorithm example using the new API

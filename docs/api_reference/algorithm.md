@@ -19,14 +19,17 @@ def create(
 Factory method to create algorithm instances.
 
 **Parameters:**
+
 - `algorithm_type`: Type of algorithm ('best_of_n', 'tree_of_thought', 'rebase', 'mixture')
 - `model`: Language model interface
 - `**kwargs`: Algorithm-specific parameters
 
 **Returns:**
+
 - Configured algorithm instance
 
 **Example:**
+
 ```python
 from plangen import Algorithm, PlanGen
 
@@ -59,14 +62,17 @@ def run(
 Execute the planning algorithm.
 
 **Parameters:**
+
 - `problem`: Problem statement
 - `constraints`: Optional list of constraints (extracted automatically if not provided)
 - `**kwargs`: Additional algorithm-specific parameters
 
 **Returns:**
+
 - Tuple of (best_plan, score, metadata)
 
 **Example:**
+
 ```python
 best_plan, score, metadata = algorithm.run(
     problem="Schedule a meeting...",
@@ -83,9 +89,11 @@ def add_observer(self, observer: ObserverProtocol) -> None
 Add an observer for visualization or logging.
 
 **Parameters:**
+
 - `observer`: Observer implementing ObserverProtocol
 
 **Example:**
+
 ```python
 from plangen.visualization import GraphRenderer
 
@@ -111,12 +119,14 @@ def __init__(
 ```
 
 **Parameters:**
+
 - `n_plans`: Number of plans to generate
 - `sampling_strategy`: Strategy for generation ('diverse' or 'adaptive')
 - `parallel`: Whether to generate in parallel
 - `llm_interface`: Language model interface
 
 **Example:**
+
 ```python
 from plangen.algorithms import BestOfN
 from plangen.models import OpenAIModelInterface
@@ -148,12 +158,14 @@ def __init__(
 ```
 
 **Parameters:**
+
 - `branching_factor`: Number of branches per node
 - `max_depth`: Maximum tree depth
 - `beam_width`: Number of best branches to keep at each level
 - `llm_interface`: Language model interface
 
 **Example:**
+
 ```python
 from plangen.algorithms import TreeOfThought
 
@@ -182,11 +194,13 @@ def __init__(
 ```
 
 **Parameters:**
+
 - `max_iterations`: Maximum number of refinement iterations
 - `improvement_threshold`: Minimum improvement to continue
 - `llm_interface`: Language model interface
 
 **Example:**
+
 ```python
 from plangen.algorithms import REBASE
 
@@ -213,10 +227,12 @@ def __init__(
 ```
 
 **Parameters:**
+
 - `max_algorithm_switches`: Maximum number of algorithm switches allowed
 - `llm_interface`: Language model interface
 
 **Example:**
+
 ```python
 from plangen.algorithms import MixtureOfAlgorithms
 

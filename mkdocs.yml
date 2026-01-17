@@ -77,6 +77,11 @@ nav:
       - Algorithms: api_reference/algorithm.md
       - Visualization: api_reference/visualization.md
       - Verifiers: api_reference/verifiers.md
+      - Internal API:
+          - Agents: api_reference/agents.md
+          - Models: api_reference/models.md
+          - Prompts: api_reference/prompts.md
+          - Verification: api_reference/verification.md
   - Algorithm Reference:
       - Overview: algorithm_reference/index.md
       - Algorithm Selection Guide: algorithm_reference/algorithm_selection_guide.md

@@ -14,7 +14,7 @@ MixtureOfAlgorithms acts as an intelligent orchestrator:
 
 ## How It Works
 
-```
+```text
 Problem → Analyze Characteristics
               ↓
     ┌─────────┴─────────┐
@@ -56,6 +56,7 @@ MixtureOfAlgorithms is ideal for:
 - **Prototyping** to find the best algorithm for later optimization
 
 Best for:
+
 - Applications with varied problems
 - When you want optimal results automatically
 - Rapid development and testing
@@ -286,6 +287,7 @@ Depends on selected algorithm(s):
 ### API Calls
 
 Variable based on:
+
 - Number of algorithm switches
 - Algorithms selected
 - Problem complexity

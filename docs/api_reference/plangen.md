@@ -25,6 +25,7 @@ def create(
 Create a new PlanGen instance with simplified configuration.
 
 **Parameters:**
+
 - `model`: Model identifier string ('gpt-4o', 'claude-3-sonnet', etc.)
 - `temperature`: Temperature for generation (0.0-1.0)
 - `max_tokens`: Maximum tokens to generate (None for model default)
@@ -32,9 +33,11 @@ Create a new PlanGen instance with simplified configuration.
 - `**kwargs`: Additional parameters passed to the model
 
 **Returns:**
+
 - Configured PlanGen instance
 
 **Example:**
+
 ```python
 # Create with default model (gpt-4o)
 plangen = PlanGen.create()
@@ -57,12 +60,15 @@ def with_model(cls, model: ModelProtocol) -> "PlanGen"
 Create a PlanGen instance with a custom model implementation.
 
 **Parameters:**
+
 - `model`: Custom model instance implementing the ModelProtocol
 
 **Returns:**
+
 - Configured PlanGen instance
 
 **Example:**
+
 ```python
 from my_custom_models import MyCustomModel
 
@@ -88,14 +94,17 @@ def with_openai(
 Create a PlanGen instance with OpenAI model.
 
 **Parameters:**
+
 - `model_name`: OpenAI model name
 - `api_key`: OpenAI API key (if not provided, uses OPENAI_API_KEY)
 - `**kwargs`: Additional parameters passed to the model
 
 **Returns:**
+
 - Configured PlanGen instance with OpenAI model
 
 **Example:**
+
 ```python
 # Create with default OpenAI model (gpt-4o)
 plangen = PlanGen.with_openai()
@@ -123,14 +132,17 @@ def with_bedrock(
 Create a PlanGen instance with AWS Bedrock model.
 
 **Parameters:**
+
 - `model_id`: Bedrock model ID
 - `region`: AWS region
 - `**kwargs`: Additional parameters passed to the model
 
 **Returns:**
+
 - Configured PlanGen instance with Bedrock model
 
 **Example:**
+
 ```python
 # Create with default Bedrock model (Claude 3 Sonnet)
 plangen = PlanGen.with_bedrock()
@@ -160,15 +172,18 @@ def solve(
 Solve a problem using the PlanGEN workflow.
 
 **Parameters:**
+
 - `problem`: Problem statement to solve
 - `algorithm`: Algorithm to use ('default', 'best_of_n', 'tree_of_thought', 'rebase', 'mixture')
 - `verifier`: Optional custom verifier for specialized verification
 - `**algorithm_params`: Additional parameters for the specific algorithm
 
 **Returns:**
+
 - Dictionary with the solution and intermediate results
 
 **Example:**
+
 ```python
 # Solve a problem using the default workflow
 result = plangen.solve("Design an algorithm to find the kth largest element in an unsorted array.")
@@ -195,14 +210,17 @@ def generate_plan(
 Generate a single plan for the given problem.
 
 **Parameters:**
+
 - `problem`: Problem statement
 - `constraints`: Optional list of constraints (extracted automatically if not provided)
 - `**kwargs`: Additional parameters for generation
 
 **Returns:**
+
 - Generated plan
 
 **Example:**
+
 ```python
 # Generate a plan with automatically extracted constraints
 plan = plangen.generate_plan("Find an algorithm to sort a list of numbers.")
@@ -225,12 +243,15 @@ def extract_constraints(self, problem: str) -> List[str]
 Extract constraints from a problem statement.
 
 **Parameters:**
+
 - `problem`: Problem statement
 
 **Returns:**
+
 - List of extracted constraints
 
 **Example:**
+
 ```python
 constraints = plangen.extract_constraints(
     "Schedule a 30-minute meeting for 3 people. Alexander is busy from 9-10am and 2-3pm."
@@ -254,15 +275,18 @@ def verify_plan(
 Verify a plan against constraints.
 
 **Parameters:**
+
 - `problem`: Problem statement
 - `plan`: Plan to verify
 - `constraints`: Optional list of constraints (extracted automatically if not provided)
 - `verifier`: Optional custom verifier
 
 **Returns:**
+
 - Tuple of (feedback, score)
 
 **Example:**
+
 ```python
 # Verify a plan with automatically extracted constraints
 feedback, score = plangen.verify_plan(

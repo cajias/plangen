@@ -51,6 +51,7 @@ The `GraphRenderer` supports various options:
 ### Tree of Thought
 
 Visualizes the exploration tree with:
+
 - Nodes for each plan state
 - Color coding by score
 - Visual indication of complete vs. incomplete plans
@@ -59,12 +60,14 @@ Visualizes the exploration tree with:
 ### REBASE
 
 Visualizes the refinement process with:
+
 - Linear sequence of plan iterations
 - Feedback and score at each refinement step
 
 ### Best of N
 
 Visualizes multiple plans with:
+
 - Star pattern with central root
 - Individual plans as separate nodes
 - Score-based coloring
@@ -73,7 +76,7 @@ Visualizes multiple plans with:
 
 To add visualization for new algorithms:
 
-1. Ensure your algorithm inherits from `BaseAlgorithm` 
+1. Ensure your algorithm inherits from `BaseAlgorithm`
 2. Call `self.notify_observers(data)` at key points in the algorithm
 3. Add algorithm-specific rendering in `GraphRenderer._update_[algorithm]_graph()`
 
