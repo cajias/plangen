@@ -24,7 +24,8 @@ Example:
 """
 from __future__ import annotations
 
-from typing import Any, Self
+from typing import Any
+from typing_extensions import Self
 
 from plangen.utils.template_loader import TemplateLoader
 

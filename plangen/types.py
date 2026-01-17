@@ -6,7 +6,7 @@ used throughout the framework. These types improve type safety and IDE support.
 
 from __future__ import annotations
 
-from typing import Any, TypedDict
+from typing import Any, Dict, List, Optional, TypedDict
 
 
 class VerificationResult(TypedDict):
@@ -22,7 +22,7 @@ class VerificationResult(TypedDict):
     is_valid: bool
     score: float
     reason: str
-    feedback: str | None
+    feedback: Optional[str]
 
 
 class SolveResult(TypedDict):
@@ -40,13 +40,13 @@ class SolveResult(TypedDict):
     """
 
     problem: str
-    constraints: str | None
-    solutions: list[str] | None
-    verification_results: list[str] | None
-    selected_solution: dict[str, Any] | None
-    score: float | None
-    metadata: dict[str, Any]
-    error: str | None
+    constraints: Optional[str]
+    solutions: Optional[List[str]]
+    verification_results: Optional[List[str]]
+    selected_solution: Optional[Dict[str, Any]]
+    score: Optional[float]
+    metadata: Dict[str, Any]
+    error: Optional[str]
 
 
 class AlgorithmResult(TypedDict):

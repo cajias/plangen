@@ -7,7 +7,8 @@ of the underlying implementation.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, Iterator, Protocol, Self
+from typing import TYPE_CHECKING, Any, Callable, Iterator, Protocol
+from typing_extensions import Self
 
 if TYPE_CHECKING:
     from plangen.algorithms.base_algorithm import BaseAlgorithm

@@ -2,7 +2,8 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Iterator, Self
+from typing import Iterator
+from typing_extensions import Self
 
 
 class BaseModelInterface(ABC):

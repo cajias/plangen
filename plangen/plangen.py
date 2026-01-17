@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from typing import Any, Iterator, Self, TypedDict
+from typing import Any, Iterator, List, Optional, TypedDict
+from typing_extensions import Self
 
 from langgraph.graph import END, StateGraph
 
@@ -18,11 +19,11 @@ class PlanGENState(TypedDict):
     """State for the PlanGEN workflow."""
 
     problem: str
-    constraints: str | None
-    solutions: list[str] | None
-    verification_results: list[str] | None
-    selected_solution: dict[str, Any] | None
-    error: str | None
+    constraints: Optional[str]
+    solutions: Optional[List[str]]
+    verification_results: Optional[List[str]]
+    selected_solution: Optional[dict]
+    error: Optional[str]
 
 
 class PlanGEN:

@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import math
-from typing import Self
+from typing_extensions import Self
 
 
 class UCB:

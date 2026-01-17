@@ -2,7 +2,8 @@
 from __future__ import annotations
 
 import os
-from typing import Iterator, Self
+from typing import Iterator
+from typing_extensions import Self
 
 from openai import OpenAI
 from tenacity import retry, stop_after_attempt, wait_random_exponential
