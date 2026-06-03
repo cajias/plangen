@@ -1,8 +1,13 @@
-<p align="center">
-  <img src="assets/banner.png" alt="plangen" width="100%">
-</p>
+```
+██████╗ ██╗      █████╗ ███╗   ██╗ ██████╗ ███████╗███╗   ██╗
+██╔══██╗██║     ██╔══██╗████╗  ██║██╔════╝ ██╔════╝████╗  ██║
+██████╔╝██║     ███████║██╔██╗ ██║██║  ███╗█████╗  ██╔██╗ ██║
+██╔═══╝ ██║     ██╔══██║██║╚██╗██║██║   ██║██╔══╝  ██║╚██╗██║
+██║     ███████╗██║  ██║██║ ╚████║╚██████╔╝███████╗██║ ╚████║
+╚═╝     ╚══════╝╚═╝  ╚═╝╚═╝  ╚═══╝ ╚═════╝ ╚══════╝╚═╝  ╚═══╝
+```
 
-# plangen
+<p align="center"><em>An implementation of Google's PlanGen multi-agent planning framework</em></p>
 
 <p align="center">
   <img src="https://img.shields.io/github/languages/top/cajias/plangen?style=for-the-badge" alt="Language">
