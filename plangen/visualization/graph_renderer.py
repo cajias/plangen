@@ -389,23 +389,23 @@ class GraphRenderer(PlanObserver):
     ) -> tuple[str, str]:
         """Create label and color for REBASE nodes."""
         node_type = node_data.get("type", "")
-        
+
         if node_type == "root":
             return "Problem", "gray"
-        
+
         score = node_data.get("score", 0)
         try:
             iteration = int(node.split("_")[1]) if "_" in node else 0
         except (ValueError, IndexError):
             iteration = 0
-        
+
         feedback = (
             node_data.get("feedback", "")[:20] + "..."
             if "feedback" in node_data
             else ""
         )
         label = f"Iter {iteration}\nScore: {score:.2f}\n{feedback}"
-        
+
         # Use color gradient based on score (0-100 range)
         score_norm = max(0, min(100, score)) / 100.0
         if score_norm < 0.5:
@@ -435,17 +435,31 @@ class GraphRenderer(PlanObserver):
     ) -> tuple[str, str]:
         """Create label and color for MixtureOfAlgorithms nodes."""
         node_type = node_data.get("type", "")
-        
+
         if node_type == "algorithm":
             algorithm = node_data.get("algorithm", "")
             label = node_data.get("label", f"Algorithm: {algorithm}")
             return label, "lightyellow"
+        if (
+            node_type == "rebase_step"
+            or node.startswith("iteration_")
+            or node == "rebase_root"
+        ):
+            return self._create_rebase_label_and_color(node, node_data)
+        if (
+            node_type in {"plan", "selected"}
+            or node.startswith("plan_")
+            or node in {"best_of_n_root", "selected_plan"}
+        ):
+            return self._create_best_of_n_label_and_color(node, node_data)
+        if any(key in node_data for key in {"depth", "steps", "complete"}):
+            return self._create_tree_of_thought_label_and_color(node_data)
         if node_type == "root":
             return "Problem", "gray"
         if node_type == "final":
             score = node_data.get("score", 0)
             return f"Final Solution\nScore: {score:.2f}", "gold"
-        
+
         # For delegated nodes, use their respective algorithm styling
         return self._create_generic_label_and_color(node_data)
 
